@@ -24,8 +24,11 @@ from tqdm import tqdm
 
 FLAGS = flags.FLAGS
 
-flags.DEFINE_string('model_folder_name', default="/cifs/data/tserre/CLPS_Serre_Lab/projects/prj_nih/prj_andrew_holmes/inference/i3d_full_processed_nih/",
-    help='To mention the model path')
+working_dir = os.getcwd()
+
+flags.DEFINE_string('model_folder_name', 
+                    default=working_dir+"../models/",
+                    help='To mention the model path')
 
 flags.DEFINE_string('video_name', default=None,
     help='The video folder format')
