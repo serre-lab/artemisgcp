@@ -2,11 +2,7 @@ name: Build Image for endpoint
 
 on: 
   push:
-      paths:
-      - 'pipelines/inference_pipeline.py'
-      - 'pipelines/Dockerfile'
-      - 'models/**'
-      - 'inference/**'
+     
 
 jobs:
   build-image:
