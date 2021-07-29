@@ -14,62 +14,90 @@ import pickle
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import tensorflow as tf
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
-from absl import flags
-from absl import app
+# from absl import flags
+# from absl import app
+import argparse
 import time
 from central_reservoir.models import i3d
 from read_videos import VideoIterator, preprocessing_raw, preprocessing_raw_new,\
         postprocessing_predicted_labels, _mkdir
 from tqdm import tqdm
 
-FLAGS = flags.FLAGS
+# FLAGS = flags.FLAGS
 
-working_dir = os.getcwd()
+# flags.DEFINE_string('model_folder_name', 
+#                     default=working_dir+"../models/",
+#                     help='To mention the model path')
 
-flags.DEFINE_string('model_folder_name', 
-                    default=working_dir+"../models/",
-                    help='To mention the model path')
+# flags.DEFINE_string('video_name', default=None,
+#     help='The video folder format')
 
-flags.DEFINE_string('video_name', default=None,
-    help='The video folder format')
+# flags.DEFINE_integer('step', default=24600,
+#     help='To specify the checkpoint')
+# flags.DEFINE_integer('how_many_per_folder', default=1,
+#     help='How many videos to process per folder')
+# flags.DEFINE_integer('batch_size', default=50,
+#     help='Processing batch size')
+# flags.DEFINE_integer('first_how_many', default=8000,
+#     help='Process first how many frames of each video')
 
-flags.DEFINE_integer('step', default=24600,
-    help='To specify the checkpoint')
-flags.DEFINE_integer('how_many_per_folder', default=1,
-    help='How many videos to process per folder')
-flags.DEFINE_integer('batch_size', default=50,
-    help='Processing batch size')
-flags.DEFINE_integer('first_how_many', default=8000,
-    help='Process first how many frames of each video')
+# flags.DEFINE_string('base_result_dir', default="./result_dir", 
+#     help='Base result directory')
+# flags.DEFINE_string('exp_name', default="..", 
+#     help='current experiment name')
 
-flags.DEFINE_string('base_result_dir', default="./result_dir", 
-    help='Base result directory')
-flags.DEFINE_string('exp_name', default="..", 
-    help='current experiment name')
+def parse_args():
 
-BEHAVIOR_INDICES = {
-    0:"drink",
-    1:"eat",
-    2:"groom",
-    3:"hang",
-    4:"sniff",
-    5:"rear",
-    6:"rest",
-    7:"walk",
-    8:"eathand"}
+    working_dir = os.getcwd()
 
-def main(unused_argv):
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--model_folder_name',
+                        default = working_dir+"../models/",
+                        help = 'To mention the model path')
+
+    parser.add_argument('--video_name',
+                        help = 'video to be processed')
+    
+    parser.add_argument('--step', 
+                        default=24600,
+                        help='To specify the checkpoint')
+
+    parser.add_argument('--how_many_per_folder', 
+                        default=1,
+                        help='How many videos to process per folder')
+
+    parser.add_argument('--batch_size', 
+                        default=50,
+                        help='Processing batch size')
+
+    parser.add_argument('--first_how_many', 
+                        default=8000,
+                        help='Process first how many frames of each video')
+
+    parser.add_argument('--base_result_dir', 
+                        default="./result_dir", 
+                        help='Base result directory')
+
+    parser.add_argument('--exp_name', 
+                        default="..", 
+                        help='current experiment name')
+
+    return parser.parse_args()
+
+
+def run_i3d(args):
 
     global_time = time.time()
     ckpt_path = os.path.join(
-        FLAGS.model_folder_name,
-        'model.ckpt-{}'.format(FLAGS.step))
+        args.model_folder_name,
+        'model.ckpt-{}'.format(args.step))
     meta_path = os.path.join(
-        FLAGS.model_folder_name,
-        'model.ckpt-{}.meta'.format(FLAGS.step))
+        args.model_folder_name,
+        'model.ckpt-{}.meta'.format(args.step))
 
-    video_folders = glob.glob(FLAGS.video_name)
-    _mkdir(os.path.join(FLAGS.base_result_dir, FLAGS.exp_name))
+    video_folders = glob.glob(args.video_name)
+    _mkdir(os.path.join(args.base_result_dir, args.exp_name))
 
     config = tf.ConfigProto(intra_op_parallelism_threads=1, inter_op_parallelism_threads=1, \
                         allow_soft_placement=True, device_count = {'CPU': 1})
@@ -87,7 +115,7 @@ def main(unused_argv):
         #input_chunk = tf.constant(0.,shape=[FLAGS.batch_size,16,224,224,3],dtype=tf.float32)
 
         pre_input = tf.placeholder(tf.float32,
-                shape=[FLAGS.batch_size, 16, 192, 256,])
+                shape=[args.batch_size, 16, 192, 256,])
         input_chunk = tf.map_fn(preprocessing_raw_new,
                 pre_input, dtype=tf.float32, back_prop=False)
         network = i3d.InceptionI3d(
@@ -116,9 +144,9 @@ def main(unused_argv):
         for video_folder in video_folders:
             start_outer_loop = time.time()
             video_iterator = VideoIterator(video_folder, 
-                    sample_num=FLAGS.how_many_per_folder, chunk_length=16, 
-                    batch_size=FLAGS.batch_size, 
-                    first_how_many=FLAGS.first_how_many)()
+                    sample_num=args.how_many_per_folder, chunk_length=16, 
+                    batch_size=args.batch_size, 
+                    first_how_many=args.first_how_many)()
             print ('Time elapsed init: %f'%(time.time() - start_outer_loop))
             chunk_count = 0
             time_read = []
@@ -143,7 +171,7 @@ def main(unused_argv):
                         # The way of naming the csv files is related to 
                         # the name matching algorithm in BABAS
                         vid_path_elem = video_folder.split('/')
-                        with open(os.path.join(FLAGS.base_result_dir, FLAGS.exp_name, pre_name.rstrip(".mp4") + ".p"), 'wb') as f:
+                        with open(os.path.join(args.base_result_dir, args.exp_name, pre_name.rstrip(".mp4") + ".p"), 'wb') as f:
                             pickle.dump(all_preds, f)
 
                         # Refresh the loop dependent variable
@@ -164,10 +192,10 @@ def main(unused_argv):
                         #all_preds[frame_no] = [preds[0][i].squeeze(), preds[1][i]]
                         all_preds[frame_no] = preds[i].squeeze()
                     frame_idx_list += frame_idx
-                    chunk_count += FLAGS.batch_size
+                    chunk_count += args.batch_size
                     
                     time_batch.append(time.time() - start)
-                    print("vid: %s with %d chunks READ: \033[1;33m %f (%f)\033[0;0m WHOLE: \033[1;33m %f (%f)\033[0;0m" % (os.path.join(FLAGS.exp_name, pre_name), chunk_count, time_read[-1], np.mean(time_read), time_batch[-1], np.mean(time_batch)))
+                    print("vid: %s with %d chunks READ: \033[1;33m %f (%f)\033[0;0m WHOLE: \033[1;33m %f (%f)\033[0;0m" % (os.path.join(args.exp_name, pre_name), chunk_count, time_read[-1], np.mean(time_read), time_batch[-1], np.mean(time_batch)))
                     #pbar.update(FLAGS.batch_size)
                     
                     #print ('Time elapsed one batch: %f %f'%(time_batch[-1], np.mean(time_batch)))
@@ -180,5 +208,7 @@ def main(unused_argv):
     
 if __name__ == '__main__':
     
-    app.run(main)
+    args = parse_args()
+
+    run_i3d(args)
     
