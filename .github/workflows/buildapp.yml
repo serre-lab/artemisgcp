@@ -1,0 +1,29 @@
+name: Build Image for endpoint
+
+on: 
+  push:
+      paths:
+      - 'pipelines/inference_pipeline.py'
+      - 'pipelines/Dockerfile'
+      - 'models/**'
+      - 'inference/**'
+
+jobs:
+  build-image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set Up GCloud
+        uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        with:
+          version: '290.0.1'
+          project_id: ${{ secrets.PROJECT_ID }}
+          service_account_key: ${{ secrets.SERVICE_ACCOUNT }}
+          export_default_credentials: true
+
+      - name: print files
+        run: ls
+      
+
+     
