@@ -21,6 +21,7 @@ from central_reservoir.models import i3d
 from read_videos import VideoIterator, preprocessing_raw, preprocessing_raw_new,\
         postprocessing_predicted_labels, _mkdir
 from tqdm import tqdm
+import dask.dataframe as dd
 
 FLAGS = flags.FLAGS
 
@@ -184,12 +185,17 @@ def run_i3d(model_folder_name = "/cifs/data/tserre/CLPS_Serre_Lab/projects/prj_n
 
 def main(unused_argv):
 
-    run_i3d(model_folder_name = FLAGS.model_folder_name, 
-            video_name = FLAGS.video_name,
-            batch_size = FLAGS.batch_size,
-            first_how_many = FLAGS.first_how_many,
-            base_result_dir = FLAGS.base_result_dir,
-            exp_name = FLAGS.exp_name)
+    JSON_file = FLAGS.video_name
+
+    dataframe = dd.read_json(JSON_file).compute()
+
+    for index, row in dataframe.iterrows():
+        run_i3d(model_folder_name = FLAGS.model_folder_name, 
+                video_name = row['videoGcsUri'],
+                batch_size = FLAGS.batch_size,
+                first_how_many = FLAGS.first_how_many,
+                base_result_dir = FLAGS.base_result_dir,
+                exp_name = FLAGS.exp_name)
 
 if __name__ == '__main__':
     
