@@ -1,6 +1,8 @@
 import logging
 import os
 from flask import Flask
+from flask import jsonify
+import json
 
 
 app = Flask(__name__)
@@ -8,8 +10,10 @@ app = Flask(__name__)
 
 @app.route('/prediction')
 def hello():
-    """Return a friendly HTTP greeting."""
-    return 'Hello World!'
+     with open("inference_pipeline.json") as file:
+        data = json.load(file)
+        """Return a friendly HTTP greeting."""
+        return data
 
 @app.route('/health')
 def healthcheck():

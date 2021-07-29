@@ -14,6 +14,8 @@ ADD inference_pipeline.py /app/inference_pipeline.py
 
 ENV PORT 8080
 
+RUN python inference_pipeline.py
+
 RUN ls
 
 CMD ["gunicorn", "app:app", "--config=config.py"]

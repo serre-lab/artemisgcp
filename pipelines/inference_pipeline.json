@@ -1,0 +1,149 @@
+{
+  "pipelineSpec": {
+    "components": {
+      "comp-inference": {
+        "executorLabel": "exec-inference",
+        "inputDefinitions": {
+          "parameters": {
+            "embeddings": {
+              "type": "STRING"
+            },
+            "video_file": {
+              "type": "STRING"
+            }
+          }
+        }
+      },
+      "comp-preprocess": {
+        "executorLabel": "exec-preprocess",
+        "inputDefinitions": {
+          "parameters": {
+            "video_file": {
+              "type": "STRING"
+            }
+          }
+        },
+        "outputDefinitions": {
+          "parameters": {
+            "Output": {
+              "type": "STRING"
+            }
+          }
+        }
+      }
+    },
+    "deploymentSpec": {
+      "executors": {
+        "exec-inference": {
+          "container": {
+            "args": [
+              "--video-file",
+              "{{$.inputs.parameters['video_file']}}",
+              "--embeddings",
+              "{{$.inputs.parameters['embeddings']}}"
+            ],
+            "command": [
+              "sh",
+              "-ec",
+              "program_path=$(mktemp)\nprintf \"%s\" \"$0\" > \"$program_path\"\npython3 -u \"$program_path\" \"$@\"\n",
+              "def inference(video_file, embeddings):\n\n    import os\n    import logging\n    logging.basicConfig(level=logging.INFO)\n    logging.info('The video file is: {}, The embeddings file is : {}'.format(video_file, embeddings))\n\nimport argparse\n_parser = argparse.ArgumentParser(prog='Inference', description='')\n_parser.add_argument(\"--video-file\", dest=\"video_file\", type=str, required=True, default=argparse.SUPPRESS)\n_parser.add_argument(\"--embeddings\", dest=\"embeddings\", type=str, required=True, default=argparse.SUPPRESS)\n_parsed_args = vars(_parser.parse_args())\n\n_outputs = inference(**_parsed_args)\n"
+            ],
+            "image": "gcr.io/deeplearning-platform-release/tf-gpu.1-15"
+          }
+        },
+        "exec-preprocess": {
+          "container": {
+            "args": [
+              "--video-file",
+              "{{$.inputs.parameters['video_file']}}",
+              "----output-paths",
+              "{{$.outputs.parameters['Output'].output_file}}"
+            ],
+            "command": [
+              "sh",
+              "-ec",
+              "program_path=$(mktemp)\nprintf \"%s\" \"$0\" > \"$program_path\"\npython3 -u \"$program_path\" \"$@\"\n",
+              "def preprocess(video_file):\n    import os\n    import logging\n    logging.basicConfig(level=logging.INFO)\n    logging.info('The video file is: {}'.format(video_file))\n\n    return video_file + '.p'\n\ndef _serialize_str(str_value: str) -> str:\n    if not isinstance(str_value, str):\n        raise TypeError('Value \"{}\" has type \"{}\" instead of str.'.format(str(str_value), str(type(str_value))))\n    return str_value\n\nimport argparse\n_parser = argparse.ArgumentParser(prog='Preprocess', description='')\n_parser.add_argument(\"--video-file\", dest=\"video_file\", type=str, required=True, default=argparse.SUPPRESS)\n_parser.add_argument(\"----output-paths\", dest=\"_output_paths\", type=str, nargs=1)\n_parsed_args = vars(_parser.parse_args())\n_output_files = _parsed_args.pop(\"_output_paths\", [])\n\n_outputs = preprocess(**_parsed_args)\n\n_outputs = [_outputs]\n\n_output_serializers = [\n    _serialize_str,\n\n]\n\nimport os\nfor idx, output_file in enumerate(_output_files):\n    try:\n        os.makedirs(os.path.dirname(output_file))\n    except OSError:\n        pass\n    with open(output_file, 'w') as f:\n        f.write(_output_serializers[idx](_outputs[idx]))\n"
+            ],
+            "image": "gcr.io/deeplearning-platform-release/tf-gpu.1-15",
+            "resources": {
+              "accelerator": {
+                "count": "1",
+                "type": "NVIDIA_TESLA_K80"
+              }
+            }
+          }
+        }
+      }
+    },
+    "pipelineInfo": {
+      "name": "automl-image-inference-v2"
+    },
+    "root": {
+      "dag": {
+        "tasks": {
+          "inference": {
+            "cachingOptions": {
+              "enableCache": true
+            },
+            "componentRef": {
+              "name": "comp-inference"
+            },
+            "dependentTasks": [
+              "preprocess"
+            ],
+            "inputs": {
+              "parameters": {
+                "embeddings": {
+                  "taskOutputParameter": {
+                    "outputParameterKey": "Output",
+                    "producerTask": "preprocess"
+                  }
+                },
+                "video_file": {
+                  "componentInputParameter": "video_file"
+                }
+              }
+            },
+            "taskInfo": {
+              "name": "inference"
+            }
+          },
+          "preprocess": {
+            "cachingOptions": {
+              "enableCache": true
+            },
+            "componentRef": {
+              "name": "comp-preprocess"
+            },
+            "inputs": {
+              "parameters": {
+                "video_file": {
+                  "componentInputParameter": "video_file"
+                }
+              }
+            },
+            "taskInfo": {
+              "name": "preprocess"
+            }
+          }
+        }
+      },
+      "inputDefinitions": {
+        "parameters": {
+          "project_id": {
+            "type": "STRING"
+          },
+          "video_file": {
+            "type": "STRING"
+          }
+        }
+      }
+    },
+    "schemaVersion": "2.0.0",
+    "sdkVersion": "kfp-1.6.6"
+  },
+  "runtimeConfig": {
+    "gcsOutputDirectory": "gs://vertex-ai-sdk-pipelines"
+  }
+}
