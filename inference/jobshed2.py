@@ -35,7 +35,7 @@ def main(args):
     with open(video_list, 'rb') as f:
         nvids = len(f.readlines())
     # 108000
-    cmd = "CUDA_VISIBLE_DEVICES={} taskset={}  python /cifs/data/tserre/CLPS_Serre_Lab/projects/prj_nih/prj_andrew_holmes/inference/get_embedding_nopad.py \
+    cmd = "CUDA_VISIBLE_DEVICES={} taskset={}  python -u /cifs/data/tserre/CLPS_Serre_Lab/projects/prj_nih/prj_andrew_holmes/inference/get_embedding_nopad.py \
        --video_name={} \
         --batch_size=128 \
         --first_how_many=108000 \
@@ -50,16 +50,16 @@ def main(args):
     def runner(x):
         gpu = q.get()
 
-        time.sleep(np.random.rand() / 2)
-        while True:
-            try:
-                os.mknod(video_list + '.lock')
-                break
-            except (KeyboardInterrupt, SystemExit):
-                raise
-            except OSError:
-                time.sleep(np.random.rand() / 2)
-                #print('waiting on lock')
+        # time.sleep(np.random.rand() / 2)
+        # while True:
+        #     try:
+        #         os.mknod(video_list + '.lock')
+        #         break
+        #     except (KeyboardInterrupt, SystemExit):
+        #         raise
+        #     except OSError:
+        #         time.sleep(np.random.rand() / 2)
+        #         #print('waiting on lock')
 
         with open(video_list, 'r+') as f:
             pos = f.tell()
@@ -70,7 +70,7 @@ def main(args):
             if line != '':
                 f.seek(pos)
                 f.write('R' + line[1:])
-        os.remove(video_list + '.lock')
+        # os.remove(video_list + '.lock')
 
         if line != '':
             #print(x, gpu, line)
