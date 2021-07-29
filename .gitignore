@@ -2,3 +2,4 @@
 *.out
 *.err
 *__pycache__*
+inference/testing.json
