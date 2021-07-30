@@ -1,0 +1,5 @@
+*/job_submit.sh
+*.out
+*.err
+*__pycache__*
+inference/testing.json
