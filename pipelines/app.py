@@ -8,14 +8,11 @@ import json
 app = Flask(__name__)
 
 
-@app.route('/prediction')
+@app.route('/prediction', methods=['POST'])
 def hello():
-     with open("inference_pipeline.json") as file:
-        data = json.load(file)
-        """Return a friendly HTTP greeting."""
-        return data
+    return {"predictions" : [ 0 ]}
 
-@app.route('/health')
+@app.route('/health', methods=['POST'])
 def healthcheck():
     """Return status upon google request"""
     return "healthy", 200 
