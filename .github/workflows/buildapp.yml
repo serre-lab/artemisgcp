@@ -26,9 +26,9 @@ jobs:
         run: |
           cd pipelines
           docker build --tag gcp-app .
-          docker tag gcp-app:latest gcr.io/github-docker-images/gcp-app:latest
+          docker tag gcp-app:latest gcr.io/gcp-app:latest
           ls
-          docker push gcr.io/github-docker-images/gcp-app:latest
+          docker push gcr.io/gcp-app:latest
       
 
      
