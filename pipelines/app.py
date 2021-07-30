@@ -8,11 +8,11 @@ import json
 app = Flask(__name__)
 
 
-@app.route('/prediction', methods=['POST'])
+@app.route('/prediction', methods=['POST','GET'])
 def hello():
     return {"predictions" : [ 0 ]}
 
-@app.route('/health', methods=['POST'])
+@app.route('/health', methods=['POST','GET'])
 def healthcheck():
     """Return status upon google request"""
     return "healthy", 200 
