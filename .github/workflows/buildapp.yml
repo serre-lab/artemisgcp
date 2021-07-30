@@ -24,6 +24,7 @@ jobs:
         continue-on-error: true
       - name: Build and Push Image
         run: |
+          cd pipelines
           docker build --tag gcp-app .
           docker tag gcp-app:latest gcr.io/github-docker-images/gcp-app:latest
           ls
