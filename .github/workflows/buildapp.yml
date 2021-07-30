@@ -17,10 +17,6 @@ jobs:
           project_id: ${{ secrets.PROJECT_ID }}
           service_account_key: ${{ secrets.SERVICE_ACCOUNT }}
           export_default_credentials: true
-
-      - name: print files
-        run: ls
-      
       - name: Configure Docker
         run: gcloud auth configure-docker
       - uses: satackey/action-docker-layer-caching@v0.0.11
@@ -30,6 +26,7 @@ jobs:
         run: |
           docker build --tag gcp-app .
           docker tag gcp-app:latest gcr.io/github-docker-images/gcp-app:latest
+          ls
           docker push gcr.io/github-docker-images/gcp-app:latest
       
 
