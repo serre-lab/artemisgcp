@@ -2,6 +2,7 @@ import kfp
 from kfp.v2 import compiler
 from google.cloud import aiplatform
 import kfp.components as comp
+import os
 
 project_id = 'acbm-317517'
 region = 'US-CENTRAL1'

@@ -2,15 +2,23 @@ import logging
 import os
 from flask import Flask
 from flask import jsonify
+from flask import request
 import json
+from kfp.v2.google.client import AIPlatformClient
 
 
 app = Flask(__name__)
 
+project_id = 'acbm-317517'
+region = 'us-central1'
+pipeline_root_path = 'gs://vertex-ai-sdk-pipelines'
+api_client = AIPlatformClient(project_id=project_id, region=region)
 
 @app.route('/prediction', methods=['POST','GET'])
-def hello():
-    return {"predictions" : [ 0 ]}
+def prediction():
+    data = request.json
+    print(data)
+    return data
 
 @app.route('/health', methods=['POST','GET'])
 def healthcheck():
