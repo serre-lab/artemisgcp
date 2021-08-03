@@ -1,0 +1,18 @@
+version: "3"
+services:
+    preprocess:
+        image: gcr.io/${{ secrets.PROJECT_ID}}/i3d_preprocessing:latest
+        build:
+            context: ./i3d
+    # inference:
+    #     image: gcr.io/${{ secrets.PROJECT_ID}}/LSTM_inference:latest
+    #     build: ./inference
+    #         context: ./LSTM
+    # training:
+    #     image: gcr.io/${{ secrets.PROJECT_ID}}/LSTM_training:latest
+    #     build: ./training
+    #         context: ./LSTM
+    # endpoint:
+    #     image: gcr.io/${{ secrets.PROJECT_ID}}/endpoint:latest
+    #     build: ./endpoint
+    #         context: .
