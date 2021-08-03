@@ -11,4 +11,4 @@ RUN pip install pickle-mixin && \
     pip install opencv-python==4.4.0.42 && \
     pip install "dask[complete]"
 
-CMD ["ls -ltr"]
+RUN ls -ltr
