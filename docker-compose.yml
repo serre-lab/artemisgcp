@@ -2,7 +2,7 @@ version: "3"
 services:
     preprocess:
         image: i3d-preprocessing:latest
-        build:
+        build: ./preprocess
             context: ./
     # inference:
     #     image: gcr.io/${{ secrets.PROJECT_ID}}/LSTM_inference:latest
