@@ -15,6 +15,6 @@ RUN pip install pickle-mixin && \
     pip install opencv-python==4.4.0.42 && \
     pip install "dask[complete]"
 
-RUN ls -ltr
+RUN ls -ltr models
 
 ENTRYPOINT ["/usr/bin/env"]
