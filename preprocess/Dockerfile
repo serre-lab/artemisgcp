@@ -12,3 +12,5 @@ RUN pip install pickle-mixin && \
     pip install "dask[complete]"
 
 RUN ls -ltr
+
+ENTRYPOINT ["/usr/bin/env"]
