@@ -24,7 +24,7 @@ jobs:
         continue-on-error: true
       - name: Build and Push Image
         run: |
-          docker compose up
+          docker-compose up
           # cd pipelines
           # docker build --tag gcp-app .
           # docker tag gcp-app:latest gcr.io/${{ secrets.PROJECT_ID}}/gcp-app:latest
