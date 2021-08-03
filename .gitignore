@@ -3,3 +3,4 @@
 *.err
 *__pycache__*
 inference/testing.json
+i3d/testing.json
