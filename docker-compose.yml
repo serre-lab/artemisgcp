@@ -1,7 +1,7 @@
 version: "3"
 services:
     preprocess:
-        image: i3d-preprocessing:latest
+        image: i3d-preprocess:latest
         build:
             context: .
             dockerfile: ./preprocess/Dockerfile
