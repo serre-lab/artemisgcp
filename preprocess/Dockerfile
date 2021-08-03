@@ -2,9 +2,13 @@ FROM gcr.io/deeplearning-platform-release/tf-gpu.1-15
 
 RUN apt update
 
-WORKDIR ./
+RUN mkdir -p preprocess
 
-COPY ["./preprocess/central_reservoir", "./i3d/models", "./preprocess/get_embedding_nopad.py", "./preprocess/read_videos.py", "./preprocess/requirements.txt", "./"]
+WORKDIR ./preprocess
+
+COPY ["./preprocess/central_reservoir", "./preprocess/get_embedding_nopad.py", "./preprocess/read_videos.py", "./preprocess/requirements.txt", "./"]
+
+COPY ["./i3d/models", "./"]
 
 RUN pip install pickle-mixin && \
     pip install PIMS==0.5 && \
