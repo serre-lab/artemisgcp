@@ -27,9 +27,9 @@ jobs:
           docker-compose up
           # cd pipelines
           # docker build --tag gcp-app .
-          # docker tag gcp-app:latest gcr.io/${{ secrets.PROJECT_ID}}/gcp-app:latest
+          docker tag i3d-preprocess:latest gcr.io/${{ secrets.PROJECT_ID}}/i3d-preprocess:latest
           # ls
-          # docker push gcr.io/${{ secrets.PROJECT_ID}}/gcp-app:latest
+          docker push gcr.io/${{ secrets.PROJECT_ID}}/i3d-preprocess:latest
       
 
      

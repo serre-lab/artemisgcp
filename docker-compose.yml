@@ -1,7 +1,7 @@
 version: "3"
 services:
     preprocess:
-        image: gcr.io/${{ secrets.PROJECT_ID}}/i3d_preprocessing:latest
+        image: i3d-preprocessing:latest
         build:
             context: ./i3d
     # inference:
