@@ -18,6 +18,7 @@ FROM build_pipeline as deploy_endpoint
 #copy json file from last build stage
 COPY --from=build_pipeline /app/inference_pipeline.json .
 
+ADD . /endpoint
 #set environment variables
 #server variables
 ENV PORT 8080

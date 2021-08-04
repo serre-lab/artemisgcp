@@ -14,6 +14,6 @@ services:
     #     build: ./training
     #         context: ./LSTM
     endpoint: 
-        image: gcr.io/${{ secrets.PROJECT_ID}}/endpoint:latest
         build: ./endpoint
-            context: .
+        ports:
+            - "8080:8080"
