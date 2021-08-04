@@ -1,6 +1,4 @@
-FROM python:3.6-jessie
-
-RUN apt update
+FROM python:3.6-jessie as build_pipeline
 
 #set working directory
 WORKDIR /app
@@ -10,8 +8,15 @@ ADD requirements.txt /app/requirements.txt
 RUN pip install -r /app/requirements.txt
 
 #add folders and files to container
-ADD . /app
+ADD . /endpoint
 ADD inference_pipeline.py /app/inference_pipeline.py
+
+RUN python inference_pipeline.py
+
+FROM build_pipeline as deploy_endpoint
+
+#copy json file from last build stage
+COPY --from=build_pipeline /app/inference_pipeline.json .
 
 #set environment variables
 #server variables
@@ -21,9 +26,6 @@ ENV PORT 8080
 ENV project_id 'acbm-317517'
 ENV region 'US-CENTRAL1'
 ENV pipeline_root_path 'gs://vertex-ai-sdk-pipelines'
-
-
-RUN python inference_pipeline.py
 
 RUN ls
 

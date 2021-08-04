@@ -1,16 +1,12 @@
-FROM python:3.6-jessie
-
-RUN apt update
-
+FROM python:3.6-jessie as build_pipeline
 WORKDIR /app
-
 ADD requirements.txt /app/requirements.txt
-
 RUN pip install -r /app/requirements.txt
 
 ADD . /app
 
 ADD inference_pipeline.py /app/inference_pipeline.py
+
 
 ENV PORT 8080
 

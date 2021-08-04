@@ -16,9 +16,10 @@ api_client = AIPlatformClient(project_id=project_id, region=region)
 
 @app.route('/prediction', methods=['POST','GET'])
 def prediction():
-    data = request.json
-    print(data)
-    return data
+    data = request.json()
+    logging.basicConfig(level=logging.INFO)
+    logging.info('The video file isrequest body is: {}'.format(data))
+    return {"predictions": [data]}
 
 @app.route('/health', methods=['POST','GET'])
 def healthcheck():
