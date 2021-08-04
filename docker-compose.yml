@@ -1,10 +1,10 @@
 version: "3"
 services:
-    preprocess:
-        image: gcr.io/${PROJECT_ID}/i3d-preprocess:latest
-        build:
-            context: .
-            dockerfile: ./preprocess/Dockerfile
+  preprocess:
+    image: gcr.io/${PROJECT_ID}/i3d-preprocess:latest
+    build:
+        context: .
+        dockerfile: ./preprocess/Dockerfile
     # inference:
     #     image: gcr.io/${{ secrets.PROJECT_ID}}/LSTM_inference:latest
     #     build: ./inference
@@ -13,8 +13,8 @@ services:
     #     image: gcr.io/${{ secrets.PROJECT_ID}}/LSTM_training:latest
     #     build: ./training
     #         context: ./LSTM
-    endpoint:
-        image: gcr.io/${{ secrets.PROJECT_ID}}/endpoint:latest
-        build: ./endpoint
-            context: .
-            dockerfile: ./endpoint/Dockerfile
+  endpoint:
+    image: gcr.io/${{ secrets.PROJECT_ID}}/endpoint:latest
+    build: ./endpoint
+        context: .
+        dockerfile: ./endpoint/Dockerfile
