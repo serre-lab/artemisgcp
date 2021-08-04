@@ -13,7 +13,8 @@ services:
     #     image: gcr.io/${{ secrets.PROJECT_ID}}/LSTM_training:latest
     #     build: ./training
     #         context: ./LSTM
-    endpoint: 
+    endpoint:
+        image: gcr.io/${{ secrets.PROJECT_ID}}/endpoint:latest
         build: ./endpoint
-        ports:
-            - "8080:8080"
+              context: .
+              dockerfile: ./endpoint/Dockerfile
