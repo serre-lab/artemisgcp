@@ -16,5 +16,4 @@ services:
   endpoint:
     image: gcr.io/${{ secrets.PROJECT_ID}}/endpoint:latest
     build: ./endpoint
-        context: .
         dockerfile: ./endpoint/Dockerfile
