@@ -23,11 +23,12 @@ jobs:
         # Ignore the failure of a step and avoid terminating the job.
         continue-on-error: true
       - name: Build and Push Image
-        env:
-          PROJECT_ID: ${{ secrets.PROJECT_ID }}
         run: |
-          docker-compose up
-          docker-compose push
+          cd endpoint
+          docker build --tag gcp-app .
+          docker tag gcp-app:latest gcr.io/${{ secrets.PROJECT_ID}}/gcp-app:latest
+          ls
+          docker push gcr.io/${{ secrets.PROJECT_ID}}/gcp-app:latest
       
 
      
