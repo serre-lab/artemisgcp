@@ -25,6 +25,8 @@ jobs:
       - name: Build and Push Image
         run: |
           cd endpoint
+          CREDENTIAL_PATH=${{ secrets.SERVICE_ACCOUNT }} docker-compose build
+          docker-compose up
           docker build --tag gcp-app .
           docker tag gcp-app:latest gcr.io/${{ secrets.PROJECT_ID}}/gcp-app:latest
           ls
