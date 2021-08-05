@@ -19,6 +19,13 @@ jobs:
           export_default_credentials: true
       - name: Configure Docker
         run: gcloud auth configure-docker
+      - name: create JSON secret
+        uses: jsdaniell/create-json@1.1.2
+        with:
+          name: "credentials.json"
+          json: ${{ secrets.SERVICE_ACCOUNT}}
+      - name: print ls
+        run: ls
       - uses: satackey/action-docker-layer-caching@v0.0.11
         # Ignore the failure of a step and avoid terminating the job.
         continue-on-error: true
