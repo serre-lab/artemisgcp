@@ -17,7 +17,7 @@ services:
     build: ./endpoint
     volumes:
       - ./endpoint:/app
-      - ${CREDENTIAL_PATH}:/credentials/credential.json:ro
+      - ${secrets.SERVICE_ACCOUNT}:/credentials/credential.json:ro
     container_name: gcp_endpoint
     command: cat /credentials/credential.json #gunicorn app:app --config=/app/config.py
     ports:
