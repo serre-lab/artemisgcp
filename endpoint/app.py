@@ -9,6 +9,7 @@ from kfp.v2.google.client import AIPlatformClient
 
 
 app = Flask(__name__)
+app.config.from_object('config')
 
 project_id = 'acbm-317517'
 region = 'us-central1'
