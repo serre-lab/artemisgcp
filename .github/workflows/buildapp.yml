@@ -24,9 +24,7 @@ jobs:
         continue-on-error: true
       - name: Build and Push Image
         run: |
-          
-          docker-compose up endpoint
-          docker-compose up
+          CREDENTIAL=${secrets.SERVICE_ACCOUNT} docker-compose up endpoint
           ls
           
       
