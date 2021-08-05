@@ -2,9 +2,20 @@ FROM gcr.io/deeplearning-platform-release/tf-gpu.1-15
 
 RUN apt update
 
+# make directories
 RUN mkdir -p preprocess && \
     mkdir -p preprocess/central_reservoir && \
-    mkdir -p preprocess/models
+    mkdir -p preprocess/models && \
+
+# Install gcsfuse.
+RUN echo "deb http://packages.cloud.google.com/apt gcsfuse-bionic main" | tee /etc/apt/sources.list.d/gcsfuse.list && \
+    curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - && \
+    apt-get update && \
+    apt-get install -y gcsfuse
+
+# Authenticate and mount gcs bucket
+RUN gcloud auth login && \
+    gcsfuse acbm_videos ./videos
 
 WORKDIR ./preprocess
 
