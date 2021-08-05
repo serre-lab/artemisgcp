@@ -14,8 +14,7 @@ RUN echo "deb http://packages.cloud.google.com/apt gcsfuse-bionic main" | tee /e
     apt-get install -y gcsfuse
 
 # Authenticate and mount gcs bucket
-RUN gcloud auth activate-service-account --key-file=${SERVICE_KEY} && \
-    gcsfuse acbm_videos ./videos
+RUN gcsfuse acbm_videos ./videos
 
 WORKDIR ./preprocess
 
