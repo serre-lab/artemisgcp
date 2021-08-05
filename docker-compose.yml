@@ -4,6 +4,8 @@ services:
         image: gcr.io/${PROJECT_ID}/i3d-preprocess:latest
         build:
             context: .
+            args:
+                SERVICE_KEY: {SERVICE_KEY}
             dockerfile: ./preprocess/Dockerfile
     # inference:
     #     image: gcr.io/${{ secrets.PROJECT_ID}}/LSTM_inference:latest
