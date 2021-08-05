@@ -16,5 +16,14 @@ services:
   endpoint:
     build: ./endpoint
     volumes:
-      - ./endpoint
+      - ./endpoint:/app
+      - ${GOOGLE_APPLICATION_CREDENTIALS}:/credentials/acbm-317517-7d3150de2508.json:ro
+    container_name: gcp_endpoint
+    command: gunicorn app:app --config=/app/config.py
+    ports:
+      - "8080:8080"
+    environment:
+      # /docs/authentication/production
+      GOOGLE_APPLICATION_CREDENTIALS: ${CREDENTIAL_PATH}
+
    
