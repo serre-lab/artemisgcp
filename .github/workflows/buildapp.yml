@@ -25,7 +25,7 @@ jobs:
       - name: Build and Push Image
         run: |
           
-          CREDENTIAL_PATH=${{ secrets.SERVICE_ACCOUNT }} docker-compose build
+          CREDENTIAL_PATH=${{ secrets.SERVICE_ACCOUNT }} docker-compose up endpoint
           docker-compose up
           ls
           
