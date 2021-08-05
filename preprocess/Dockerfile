@@ -22,6 +22,10 @@ COPY ["./preprocess/get_embedding_nopad.py", "./preprocess/read_videos.py", "./p
 
 # Copy git lfs files
 COPY ["./i3d/models", "./models"]
+
+RUN sudo apt-get install git-lfs && \
+    git-lfs install
+
 RUN cd models && \
     git lfs pull -I *
 
