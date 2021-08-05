@@ -27,7 +27,7 @@ RUN apt-get install git-lfs && \
     git-lfs install
 
 RUN cd models && \
-    git lfs pull -I *
+    git-lfs pull -I *
 
 COPY ["./preprocess/central_reservoir", "./central_reservoir"]
 
