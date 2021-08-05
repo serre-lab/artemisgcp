@@ -19,7 +19,7 @@ services:
       - ./endpoint:/app
       - ${GOOGLE_APPLICATION_CREDENTIALS}:/credentials/credential.json:ro
     container_name: gcp_endpoint
-    command: ls /credentials #gunicorn app:app --config=/app/config.py
+    command: cat /credentials/credential.json #gunicorn app:app --config=/app/config.py
     ports:
       - "8080:8080"
     environment:

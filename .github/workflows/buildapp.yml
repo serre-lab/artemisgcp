@@ -25,7 +25,7 @@ jobs:
       - name: Build and Push Image
         run: |
           
-          docker-compose up endpoint
+          CREDENTIAL_PATH=${{ env.GOOGLE_APPLICATION_CREDENTIALS }} docker-compose up endpoint
           docker-compose up
           ls
           
