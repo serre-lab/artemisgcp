@@ -4,6 +4,9 @@ services:
         image: gcr.io/${PROJECT_ID}/i3d-preprocess:latest
         build:
             context: .
+            args:
+                - ssh_prv_key=${SSH_PRV_KEY}
+                - ssh_pub_key=${SSH_PUB_KEY}
             dockerfile: ./preprocess/Dockerfile
     # inference:
     #     image: gcr.io/${{ secrets.PROJECT_ID}}/LSTM_inference:latest
