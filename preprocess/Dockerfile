@@ -28,7 +28,7 @@ RUN mkdir -p preprocess && \
 
 WORKDIR ./preprocess
 
-COPY ["./artemisgcp/preprocess", "./"]
+COPY ["./preprocess", "./"]
 
 # Copy git lfs files
 COPY --from=lfs_runner ["./artemisgcp/i3d/models", "./models"]
@@ -36,7 +36,8 @@ COPY --from=lfs_runner ["./artemisgcp/i3d/models", "./models"]
 RUN pip install pickle-mixin && \
     pip install PIMS==0.5 && \
     pip install opencv-python==4.4.0.42 && \
-    pip install "dask[complete]"
+    pip install "dask[complete]" && \
+    pip install google-cloud-storage
 
 # Downloading gcloud package
 RUN curl https://dl.google.com/dl/cloudsdk/release/google-cloud-sdk.tar.gz > /tmp/google-cloud-sdk.tar.gz
