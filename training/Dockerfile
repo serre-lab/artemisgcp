@@ -11,7 +11,7 @@ WORKDIR ./training
 # COPY FILES INTO CONTAINER
 
 # local files
-COPY ["./acbm-317517-7d3150de2508.json", "./"]
+#COPY ["./acbm-317517-7d3150de2508.json", "./"]
 COPY ["./training/utils.py", "./training/dataset_load_torch.py", "./training/requirements.txt", "./training/training_runjob.sh", "./training/main_training.py", "./training/baseline.py", "./"]
 
 # git lfs files
