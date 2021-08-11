@@ -25,5 +25,5 @@ ENV pipeline_root_path 'gs://vertex-ai-sdk-pipelines'
 
 RUN python inference_pipeline.py
 
-RUN ls /app
+
 

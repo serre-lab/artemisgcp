@@ -4,3 +4,5 @@
 *__pycache__*
 inference/testing.json
 i3d/testing.json
+aacbm-317517-7d3150de2508.json
+*.json
