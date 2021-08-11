@@ -32,7 +32,7 @@ RUN pip install -r /training/requirements.txt
 #ENTRYPOINT ["/usr/bin/env", "/training/training_runjob.sh"]
 
 #dummy CMD that is overwritten by argument in docker run (docker run -i "video string")
-#CMD [""]
+CMD [""]
 
 
 
