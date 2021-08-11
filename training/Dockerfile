@@ -27,14 +27,12 @@ COPY ["./LSTM/models", "./models"]
 # install dependencies
 RUN pip install -r /training/requirements.txt
 
-# add privleges to bash files
-RUN ["chmod", "+x", "/training/training_runjob.sh"]
 
 # command after every docker run
-ENTRYPOINT ["/usr/bin/env", "/training/training_runjob.sh"]
+#ENTRYPOINT ["/usr/bin/env", "/training/training_runjob.sh"]
 
 #dummy CMD that is overwritten by argument in docker run (docker run -i "video string")
-CMD [""]
+#CMD [""]
 
 
 
