@@ -7,48 +7,58 @@ from kubernetes.client.models import V1EnvVar
 import kfp.components as comp
 
 project_id = 'acbm-317517'
-region = 'US-CENTRAL1'
+region = 'us-central1'
 pipeline_root_path = 'gs://vertex-ai-sdk-pipelines'
+
+create_step_train = comp.load_component_from_text("""
+name: Train Model
+description: trains LSTM model
+
+inputs:
+- {name: model_uri, type: String, description: 'URI to Base Model to be trained'}
+- {name: annotation_uri, type: String, description: 'URI to Annotations to use for training'}
+- {name: embedding_uri, type: String, description: 'URI to Embeddings to use for training'}
+
+implementation:
+  container:
+    image: gcr.io/acbm-317517/artemisgcp_training:latest
+    # command is a list of strings (command-line arguments). 
+    # The YAML language has two syntaxes for lists and you can use either of them. 
+    # Here we use the "flow syntax" - comma-separated strings inside square brackets.
+    command: [
+      python, 
+      # Path of the program inside the container
+      /training/main_training.py,
+      --model,
+      {inputValue: model_uri},
+      --emb, 
+      {inputValue: embedding_uri},
+      --annotation, 
+      {inputValue: annotation_uri},
+    ]""")
+
 
 #KFP pipeline. Needs name and root path where artifacts stored
 @kfp.dsl.pipeline(
     name="automl-image-inference-v2",
     pipeline_root=pipeline_root_path)
 
-#Preprocess component. Input: video_uri - Output: embeddings
-#def preprocess(video_file: str) -> str:
-#    import os
-#    import logging
-#    logging.basicConfig(level=logging.INFO)
-#    logging.info('The video file is: {}'.format(video_file))
 
-#    return video_file + '.p'
-
-#Training component. Inputs: annotations_uri, embeddings_uri - Ouput: confusion matrix (not there yet but end goal)
-def traing(video_file: str, embeddings: str):
-
-    import os
-    import logging
-    logging.basicConfig(level=logging.INFO)
-    logging.info('The video file is: {}, The embeddings file is : {}'.format(video_file, embeddings))
-
-#preprocess_step = comp.create_component_from_func(
-#    preprocess,
-#    base_image='gcr.io/deeplearning-platform-release/tf-gpu.1-15'
-#    )
-
-train_step = comp.create_component_from_func(
-    train,
-    base_image='gcr.io/deeplearning-platform-release/tf-gpu.1-15'
+def pipeline(project_id: str):
+    train_step = create_step_train(
+        model_uri='gs://acbm_videos/model0.9573332767722087.pth',
+        annotation_uri='gs://acbm_videos/Trap2_FC-A-1-12-Postfearret_new_video_2019Y_02M_23D_05h_30m_06s_cam_6394846-0000.json',
+        embedding_uri='gs://acbm_videos/Trap2_FC-A-1-12-Postfearret_new_video_2019Y_02M_23D_05h_30m_06s_cam_6394846-0000.p ',
     )
 
-
-def pipeline(project_id: str, video_file: str):
-
-    #preprocess_op = (preprocess_step(video_file).
-    #    add_node_selector_constraint('cloud.google.com/gke-accelerator', 'nvidia-tesla-k80').
-    #    set_gpu_limit(1))
-    inference_op = train_step(video_file, preprocess_op.output)
-
 compiler.Compiler().compile(pipeline_func=pipeline,
-        package_path='inference_pipeline.json')
+        package_path='training_pipeline.json')
+
+api_client = AIPlatformClient(project_id=project_id, region=region)
+
+response = api_client.create_run_from_job_spec(
+    'training_pipeline.json',
+    pipeline_root=pipeline_root_path,
+    parameter_values={
+        'project_id': project_id
+    })

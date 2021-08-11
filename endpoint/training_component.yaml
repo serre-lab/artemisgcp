@@ -1,0 +1,30 @@
+name: Train Model
+description: trains LSTM model
+
+inputs:
+- {name: model_uri, type: String, description: 'URI to Base Model to be trained'}
+- {name: annotation_uri, type: String, description: 'URI to Annotations to use for training'}
+- {name: embedding_uri, type: String, description: 'URI to Embeddings to use for training'}
+
+outputs:
+- {name: saved_model_uri, type: String, description: 'URI to Saved model to use for predictions'}
+
+implementation:
+  container:
+    image: gcr.io/acbm-317517/artemisgcp_training:latest
+    # command is a list of strings (command-line arguments). 
+    # The YAML language has two syntaxes for lists and you can use either of them. 
+    # Here we use the "flow syntax" - comma-separated strings inside square brackets.
+    command: [
+      python, 
+      # Path of the program inside the container
+      /training/main_training.py,
+      --model,
+      {inputPath: model_uri},
+      --emb, 
+      {inputPath: embedding_uri},
+      --annotation, 
+      {inputPath: annotation_uri},
+      --save,
+      {outputPath: saved_model_uri}
+    ]

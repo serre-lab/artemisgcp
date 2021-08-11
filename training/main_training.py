@@ -14,6 +14,9 @@ import pickle
 import os
 import time
 import argparse
+import logging
+logging.basicConfig(level=logging.INFO)
+logging.info('The video main training code is running')
 
 
 plt.ioff()
