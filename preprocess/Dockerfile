@@ -17,7 +17,7 @@ RUN cd artemisgcp && \
     git lfs pull -I i3d/models
 
 ### MAIN CONTAINER
-FROM gcr.io/deeplearning-platform-release/tf-gpu.1-15
+FROM tensorflow/tensorflow:1.15.5-gpu
 
 RUN apt update && \
     apt-get install ffmpeg libsm6 libxext6  -y
@@ -53,4 +53,4 @@ RUN mkdir -p /usr/local/gcloud \
 ENV PATH $PATH:/usr/local/gcloud/google-cloud-sdk/bin
 ENV PYTHONPATH /preprocess:$PYTHONPATH
 
-# ENTRYPOINT ["/bin/bash"]
+ENTRYPOINT ["/bin/bash"]
