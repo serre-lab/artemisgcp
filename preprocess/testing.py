@@ -28,7 +28,7 @@ def preprocess(video_file: str, model_folder_name = 'models') -> list:
     bucket_name, source_blob_name = parse_url(video_file)
     download_blob(bucket_name, source_blob_name, 'videos')
     pickle_files.append(    run_i3d(model_folder_name = model_folder_name, 
-                                    video_name = 'videos',
+                                    video_name = 'videos' + os.sep + source_blob_name,
                                     base_result_dir = 'videos',
                                     exp_name = 'rkakodka')  )
 
