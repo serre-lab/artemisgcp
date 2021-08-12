@@ -24,7 +24,8 @@ RUN apt update && \
 
 # make directories
 RUN mkdir -p preprocess && \
-    mkdir -p preprocess/models
+    mkdir -p preprocess/models && \
+    mkdir -p videos
 
 WORKDIR ./preprocess
 
