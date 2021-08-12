@@ -70,7 +70,7 @@ def run_i3d(model_folder_name = "models",
         model_folder_name,
         'model.ckpt-{}'.format(step))
     meta_path = os.path.join(
-        FLAGS.model_folder_name,
+        model_folder_name,
         'model.ckpt-{}.meta'.format(step))
 
     video_folders = glob.glob(video_name)
@@ -173,7 +173,7 @@ def run_i3d(model_folder_name = "models",
                     chunk_count += batch_size
                     
                     time_batch.append(time.time() - start)
-                    print("vid: %s with %d chunks READ: \033[1;33m %f (%f)\033[0;0m WHOLE: \033[1;33m %f (%f)\033[0;0m" % (os.path.join(FLAGS.exp_name, pre_name), chunk_count, time_read[-1], np.mean(time_read), time_batch[-1], np.mean(time_batch)))
+                    print("vid: %s with %d chunks READ: \033[1;33m %f (%f)\033[0;0m WHOLE: \033[1;33m %f (%f)\033[0;0m" % (os.path.join(exp_name, pre_name), chunk_count, time_read[-1], np.mean(time_read), time_batch[-1], np.mean(time_batch)))
                     #pbar.update(FLAGS.batch_size)
                     
                     #print ('Time elapsed one batch: %f %f'%(time_batch[-1], np.mean(time_batch)))
