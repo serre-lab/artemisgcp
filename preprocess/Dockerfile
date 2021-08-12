@@ -17,7 +17,7 @@ RUN cd artemisgcp && \
     git lfs pull -I i3d/models
 
 ### MAIN CONTAINER
-FROM tensorflow/tensorflow:1.15.5-gpu
+FROM gcr.io/deeplearning-platform-release/tf-gpu.1-15
 
 RUN apt update && \
     apt-get install ffmpeg libsm6 libxext6  -y
@@ -38,6 +38,7 @@ RUN pip install pickle-mixin && \
     pip install PIMS==0.5 && \
     pip install opencv-python==4.4.0.42 && \
     pip install "dask[complete]" && \
+    pip install moviepy && \
     pip install google-cloud-storage
 
 # Downloading gcloud package
