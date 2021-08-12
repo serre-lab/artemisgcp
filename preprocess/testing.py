@@ -1,6 +1,6 @@
 import argparse
 
-def preprocess(video_file: str, model_folder_name = 'models') -> list:
+def preprocess(video_file: str, model_folder_name: str) -> list:
     import dask.dataframe as dd
     from get_embedding_nopad import run_i3d
     from urllib.parse import urlparse
