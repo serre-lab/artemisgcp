@@ -13,11 +13,14 @@ annotation_bucket = client.bucket('acbm_videos')
 
 blobs = annotation_bucket.list_blobs()
 
+annotationBlob = annotation_bucket.blob('test/testset_GT')
+
+data = annotationBlob.download_as_bytes()
+
+
+print('help', data)
 for blob in blobs:
   
-    if '.json' in blob.name:
-        print(blob.name)
+    print(blob.name)
 
-count = len(open('mydata.json').readlines(  ))
 
-print(count)

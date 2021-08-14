@@ -36,7 +36,7 @@ implementation:
       {inputValue: embedding_bucket},
       --annotation, 
       {inputValue: annotation_bucket},
-      --out-model,
+      --trainedmodel,
       {outputPath: trained_model}
     ]""")
 

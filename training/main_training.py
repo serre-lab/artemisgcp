@@ -30,9 +30,7 @@ parser.add_argument('-a', '--annotation', help='Path to annotation URI foler', r
 parser.add_argument('-t', '--trainedmodel', help='Path to trained model', required=True)
 args = parser.parse_args()
 
-print(args.model)
-print(args.annotation)
-print(args.emb)
+logging.info(args.model)
 
 #load available data frames
 data = MouseDataset(args.annotation, args.emb) #object that allows us to get a data. __getitem__ returns 64 embs, labels
