@@ -41,6 +41,7 @@ def pipeline(project_id: str, video_file: str):
     preprocess_op = (preprocess_step(video_file).
         add_node_selector_constraint('cloud.google.com/gke-accelerator', 'nvidia-tesla-k80').
         set_gpu_limit(1))
+    print(preprocess_op.output)
     inference_op = inference_step(video_file, preprocess_op.output)
 
 compiler.Compiler().compile(pipeline_func=pipeline,

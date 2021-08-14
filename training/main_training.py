@@ -29,6 +29,10 @@ parser.add_argument('-e', '--emb', help='Path to embs URI folder.', required=Tru
 parser.add_argument('-a', '--annotation', help='Path to annotation URI foler', required=True)
 args = parser.parse_args()
 
+print(args.model)
+print(args.annotation)
+print(args.emb)
+
 #load available data frames
 data = MouseDataset(args.annotation, args.emb) #object that allows us to get a data. __getitem__ returns 64 embs, labels
 

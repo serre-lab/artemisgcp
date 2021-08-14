@@ -5,6 +5,7 @@ from google.cloud import aiplatform
 from google_cloud_pipeline_components import aiplatform as gcc_aip
 from kubernetes.client.models import V1EnvVar
 import kfp.components as comp
+from kfp.components import InputPath, InputTextFile, OutputPath, OutputTextFile
 
 project_id = 'acbm-317517'
 region = 'us-central1'
@@ -13,12 +14,12 @@ pipeline_root_path = 'gs://vertex-ai-sdk-pipelines'
 create_step_train = comp.load_component_from_text("""
 name: Train Model
 description: trains LSTM model
-
 inputs:
-- {name: model_uri, type: String, description: 'URI to Base Model to be trained'}
-- {name: annotation_uri, type: String, description: 'URI to Annotations to use for training'}
-- {name: embedding_uri, type: String, description: 'URI to Embeddings to use for training'}
-
+- {name: model_uri, type: String, description: 'Path to Base Model to be trained'}
+- {name: annotation_bucket, type: String, description: 'Path to Annotations to use for training'}
+- {name: embedding_bucket, type: String, description: 'Path to Embeddings to use for training'}
+outputs:
+- {name: trained_model, type: Pytorch Model, descriptions: 'Trained model output'}
 implementation:
   container:
     image: gcr.io/acbm-317517/artemisgcp_training:latest
@@ -30,26 +31,49 @@ implementation:
       # Path of the program inside the container
       /training/main_training.py,
       --model,
-      {inputValue: model_uri},
+      {inputPath: model_uri},
       --emb, 
-      {inputValue: embedding_uri},
+      {inputPath: embedding_uri},
       --annotation, 
-      {inputValue: annotation_uri},
+      {inputPath: annotation_bucket},
+      --out-model,
+      {outputPath: trained_model}
     ]""")
 
+def download_model(source_blob_model: str, model_file: OutputPath()):
+    import subprocess
+    subprocess.run(["pip", "install", "google-cloud-storage"])
+    from google.cloud import storage
+    from urllib.parse import urlparse
+
+    client = storage.Client()
+    model_url = urlparse(source_blob_model)
+    model_bucket = client.bucket(model_url.netloc)
+    modelBlob = model_bucket.blob(model_url.path.replace('/',''))
+    modelBlob.download_to_filename(model_file)
+    
+
+download_blob_step = comp.create_component_from_func(
+  download_model,
+  base_image='gcr.io/google.com/cloudsdktool/cloud-sdk:latest',
+)
 
 #KFP pipeline. Needs name and root path where artifacts stored
 @kfp.dsl.pipeline(
     name="automl-image-inference-v2",
     pipeline_root=pipeline_root_path)
 
-
-def pipeline(project_id: str):
+def pipeline(project_id: str, model_uri: str, annotation_bucket: str, embedding_bucket: str):
+    download_blob_op = (download_blob_step(
+      model_uri
+    ))
+    
     train_step = create_step_train(
-        model_uri='gs://acbm_videos/model0.9573332767722087.pth',
-        annotation_uri='gs://acbm_videos/Trap2_FC-A-1-12-Postfearret_new_video_2019Y_02M_23D_05h_30m_06s_cam_6394846-0000.json',
-        embedding_uri='gs://acbm_videos/Trap2_FC-A-1-12-Postfearret_new_video_2019Y_02M_23D_05h_30m_06s_cam_6394846-0000.p ',
+        model_uri=download_blob_op.outputs['model'],
+        annotation_bucket=annotation_bucket,
+        embedding_bucket=embedding_bucket,
     )
+    
 
 compiler.Compiler().compile(pipeline_func=pipeline,
         package_path='training_pipeline.json')
@@ -60,5 +84,12 @@ response = api_client.create_run_from_job_spec(
     'training_pipeline.json',
     pipeline_root=pipeline_root_path,
     parameter_values={
-        'project_id': project_id
+        'project_id': project_id,
+        'model_uri': 'gs://acbm_videos/model0.9573332767722087.pth',
+        'annotation_uri': 'acbm_videos',
+        'embedding_uri': 'acbm_videos'
     })
+
+
+
+#add blob downloader for training process for now. then talk to people about how to separate and pass through
