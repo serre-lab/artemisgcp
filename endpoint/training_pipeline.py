@@ -18,8 +18,7 @@ inputs:
 - {name: model_uri, type: Path, description: 'Path to Base Model to be trained'}
 - {name: annotation_bucket, type: String, description: 'Path to Annotations to use for training'}
 - {name: embedding_bucket, type: String, description: 'Path to Embeddings to use for training'}
-outputs:
-- {name: trained_model, type: Pytorch Model, description: 'Trained model output'}
+
 implementation:
   container:
     image: gcr.io/acbm-317517/artemisgcp_training:latest
@@ -36,8 +35,6 @@ implementation:
       {inputValue: embedding_bucket},
       --annotation, 
       {inputValue: annotation_bucket},
-      --trainedmodel,
-      {outputPath: trained_model}
     ]""")
 
 def download_model(source_blob_model: str, model_file: OutputPath()):
