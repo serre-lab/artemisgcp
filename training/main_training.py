@@ -27,6 +27,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-m', '--model', help='Path to model URI folder.')
 parser.add_argument('-e', '--emb', help='Path to embs URI folder.', required=True)
 parser.add_argument('-a', '--annotation', help='Path to annotation URI foler', required=True)
+parser.add_argument('-t', '--trainedmodel', help='Path to trained model', required=True)
 args = parser.parse_args()
 
 print(args.model)

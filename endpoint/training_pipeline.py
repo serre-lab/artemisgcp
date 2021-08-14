@@ -15,11 +15,11 @@ create_step_train = comp.load_component_from_text("""
 name: Train Model
 description: trains LSTM model
 inputs:
-- {name: model_uri, type: String, description: 'Path to Base Model to be trained'}
+- {name: model_uri, type: Path, description: 'Path to Base Model to be trained'}
 - {name: annotation_bucket, type: String, description: 'Path to Annotations to use for training'}
 - {name: embedding_bucket, type: String, description: 'Path to Embeddings to use for training'}
 outputs:
-- {name: trained_model, type: Pytorch Model, descriptions: 'Trained model output'}
+- {name: trained_model, type: Pytorch Model, description: 'Trained model output'}
 implementation:
   container:
     image: gcr.io/acbm-317517/artemisgcp_training:latest
@@ -33,9 +33,9 @@ implementation:
       --model,
       {inputPath: model_uri},
       --emb, 
-      {inputPath: embedding_uri},
+      {inputValue: embedding_bucket},
       --annotation, 
-      {inputPath: annotation_bucket},
+      {inputValue: annotation_bucket},
       --out-model,
       {outputPath: trained_model}
     ]""")
@@ -69,7 +69,7 @@ def pipeline(project_id: str, model_uri: str, annotation_bucket: str, embedding_
     ))
     
     train_step = create_step_train(
-        model_uri=download_blob_op.outputs['model'],
+        model_uri=download_blob_op.output,
         annotation_bucket=annotation_bucket,
         embedding_bucket=embedding_bucket,
     )
@@ -86,8 +86,8 @@ response = api_client.create_run_from_job_spec(
     parameter_values={
         'project_id': project_id,
         'model_uri': 'gs://acbm_videos/model0.9573332767722087.pth',
-        'annotation_uri': 'acbm_videos',
-        'embedding_uri': 'acbm_videos'
+        'annotation_bucket': 'acbm_videos',
+        'embedding_bucket': 'acbm_videos'
     })
 
 
