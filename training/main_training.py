@@ -31,7 +31,6 @@ parser.add_argument('-a', '--annotation', help='Path to annotation URI foler', r
 parser.add_argument('-t', '--trainedmodel', help='Path to trained model', required=True)
 args = parser.parse_args()
 
-logging.info(args.annotation)
 
 #download blobs to container based on argument
 downloadData(annotation_bucket_name=args.annotation, embedding_bucket_name=args.emb)
