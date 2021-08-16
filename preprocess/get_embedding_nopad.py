@@ -148,8 +148,8 @@ def run_i3d(model_folder_name = "models",
                         # The way of naming the csv files is related to 
                         # the name matching algorithm in BABAS
                         vid_path_elem = video_folder.split('/')
-                        pickle_file = os.path.join(base_result_dir, exp_name, pre_name.rstrip(".mp4") + ".p")
-                        with open(pickle_file, 'wb') as f:
+                        # pickle_file = os.path.join(base_result_dir, exp_name, pre_name.rstrip(".mp4") + ".p")
+                        with open(base_result_dir, 'wb') as f:
                             pickle.dump(all_preds, f)
 
                         # Refresh the loop dependent variable
@@ -184,7 +184,7 @@ def run_i3d(model_folder_name = "models",
     #pbar.close()
     print('Finished whole thing in: ', time.time()-global_time)
 
-    return pickle_file
+    return base_result_dir
 
 # def main(unused_argv):
 
