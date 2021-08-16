@@ -74,7 +74,7 @@ def run_i3d(model_folder_name = "models",
         'model.ckpt-{}.meta'.format(step))
 
     video_folders = glob.glob(video_name)
-    _mkdir(os.path.join(base_result_dir, exp_name))
+    # _mkdir(os.path.join(base_result_dir, exp_name))
 
     config = tf.ConfigProto(intra_op_parallelism_threads=1, inter_op_parallelism_threads=1, \
                         allow_soft_placement=True, device_count = {'CPU': 1})
