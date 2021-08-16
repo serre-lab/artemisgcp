@@ -9,6 +9,7 @@ from baseline import StackedLSTM, MLP, StackedLSTMOne, BiStackedLSTMOne
 from utils import bal_acc, class_report, plot_confusion_matrix, slackify
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
+from download_blobs import downloadData
 from dataset_load_torch import MouseDataset
 import pickle
 import os
@@ -31,6 +32,13 @@ parser.add_argument('-t', '--trainedmodel', help='Path to trained model', requir
 args = parser.parse_args()
 
 logging.info(args.annotation)
+
+#download blobs to container based on argument
+downloadData(annotation_bucket_name=args.annotation, embedding_bucket_name=args.emb)
+
+f = open('annotations/Trap2_FC-A-1-12-Postfear_new_video_2019Y_02M_23D_05h_30m_06s_cam_6394846-0000.mp4_training_annotations.json')
+
+print(f.read())
 
 #load available data frames
 data = MouseDataset(args.annotation, args.emb) #object that allows us to get a data. __getitem__ returns 64 embs, labels
