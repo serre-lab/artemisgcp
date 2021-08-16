@@ -34,7 +34,7 @@ def preprocess(video_file: str, model_folder_name: str, output_folder: str) -> l
                                     video_name = 'videos' + os.sep + source_blob_name,
                                     batch_size = 32,
                                     first_how_many= 108000,
-                                    base_result_dir = (output_folder + os.sep + source_blob_name.rstrip('.mp4') +'.p'),
+                                    base_result_dir = ('videos/' + os.sep + source_blob_name.rstrip('.mp4') +'.p'),
                                     exp_name = 'rkakodka')  )
 
     return pickle_files
