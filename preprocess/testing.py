@@ -32,6 +32,8 @@ def preprocess(video_file: str, model_folder_name: str, output_folder: str) -> l
         os.makedirs(output_folder)
     pickle_files.append(    run_i3d(model_folder_name = model_folder_name, 
                                     video_name = 'videos' + os.sep + source_blob_name,
+                                    batch_size = 32,
+                                    first_how_many= 108000,
                                     base_result_dir = (output_folder + os.sep + source_blob_name.rstrip('.mp4') +'.p'),
                                     exp_name = 'rkakodka')  )
 
