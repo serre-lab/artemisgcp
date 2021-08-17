@@ -30,13 +30,13 @@ def downloadData(annotation_bucket_name='', embedding_bucket_name=''):
             annotation.download_to_filename(destination_uri)
             
 
-    """
+    
     for emb in embedding_list_blobs:
         if ".p" in emb.name:
             destination_uri = '{}/{}'.format('embeddings', emb.name) 
             emb.download_to_filename(destination_uri)
 
-    """
+    
 
   
 
