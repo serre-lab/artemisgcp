@@ -31,7 +31,7 @@ jobs:
           docker-compose up 
           docker image ls
           docker tag artemisgcp_training:latest gcr.io/${{ secrets.PROJECT_ID}}/artemisgcp_training:latest
-          docker push gcr.io/${{ secrets.PROJECT_ID}}/artemisgcp_training:try
+          docker push gcr.io/${{ secrets.PROJECT_ID}}/artemisgcp_training:latest
 
           
       
