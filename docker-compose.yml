@@ -13,8 +13,6 @@ services:
     build: 
       context: .
       dockerfile: ./training/Dockerfile
-      cache_from: 
-        - gcr.io/acbm-317517/artemisgcp_training:latest
   #endpoint:
   #  build: ./endpoint
   #  volumes:
