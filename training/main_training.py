@@ -153,7 +153,7 @@ if __name__ == '__main__':
              loss_100 = []
              model.train()
              if b_acc==max(baccs) and b_acc>0.7:
-                torch.save(model.state_dict(), args.trainedmodel)
+                torch.save(model.state_dict(), 'trainedmodel.pth')
                 print("model saved")
 
    

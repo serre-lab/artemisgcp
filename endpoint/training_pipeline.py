@@ -21,7 +21,7 @@ inputs:
 - {name: embedding_bucket, type: String, description: 'Path to Embeddings to use for training'}
 
 outputs:
-- {name: trainedmodel, type: String, description: 'Output for trained model.'}
+- {name: trainedmodel, type: Path, description: 'Output for trained model.'}
 implementation:
   container:
     image: gcr.io/acbm-317517/artemisgcp_training:latest
@@ -84,10 +84,12 @@ def pipeline(project_id: str, model_uri: str, annotation_bucket: str, embedding_
         model_uri=download_blob_op.output,
         annotation_bucket=annotation_bucket,
         embedding_bucket=embedding_bucket,
-    )
+    ).add_node_selector_constraint(
+        'cloud.google.com/gke-accelerator', 'nvidia-tesla-p100'
+    ).set_gpu_limit(1)
 
-    read_model_op(read_trained_model_step(
-      cre
+    read_model_op= (read_trained_model_step(
+        train_step.output
     ))
 
 
