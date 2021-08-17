@@ -55,8 +55,7 @@ def download_model(source_blob_model: str, model_file: OutputPath()):
     modelBlob.download_to_filename(model_file)
 
 def read_trained_model(trained_model: InputPath()):
-  f = open(trained_model)
-  print(f)
+  print(trained_model)
     
 
 download_blob_step = comp.create_component_from_func(
