@@ -6,7 +6,7 @@ Created on Wed Jun 19 19:49:24 2019
 @author: alekhka & jbeck
 """
 import pickle
-#import os
+import os
 import torch
 from torch.utils.data.dataset import Dataset
 import pandas as pd
@@ -50,7 +50,11 @@ class MouseDataset(Dataset):
     ind_for_dict_frames = 0
     #load all label files into one dataframe
     for file in glob.glob(annotation_path + '*.json'):#[0:1]:  
-      print(file)   
+      print(file)
+      if os.path.isfile(emb_path + file[file.rfind("/")+1:-5] + ".p") == False:
+        print('embedding file not found. Skipping')
+        continue
+
       #load labels and embs
       labels = pd.read_json(file)
       embs = pd.read_pickle(emb_path + file[file.rfind("/")+1:-5] + ".p")

@@ -33,11 +33,11 @@ args = parser.parse_args()
 
 
 #download blobs to container based on argument
-downloadData(annotation_bucket_name=args.annotation, embedding_bucket_name=args.emb)
+#downloadData(annotation_bucket_name=args.annotation, embedding_bucket_name=args.emb)
 
-f = open('annotations/Trap2_FC-A-1-12-Postfear_new_video_2019Y_02M_23D_05h_30m_06s_cam_6394846-0000.mp4_training_annotations.json')
+#f = open('annotations/Trap2_FC-A-1-12-Postfear_new_video_2019Y_02M_23D_05h_30m_06s_cam_6394846-0000.mp4_training_annotations.json')
 
-print(f.read())
+#print(f.read())
 
 #load available data frames
 data = MouseDataset('annotations/', 'embeddings/') #object that allows us to get a data. __getitem__ returns 64 embs, labels
