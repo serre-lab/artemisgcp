@@ -1,9 +1,11 @@
 import argparse
+from genericpath import exists
 
 def preprocess(video_file: str, model_folder_name: str, output_folder: str) -> list:
     import dask.dataframe as dd
     from get_embedding_nopad import run_i3d
     from urllib.parse import urlparse
+    from pathlib import Path
     import os
 
     def download_blob(bucket_name, source_blob_name, destination_folder):
@@ -28,13 +30,14 @@ def preprocess(video_file: str, model_folder_name: str, output_folder: str) -> l
 
     bucket_name, source_blob_name = parse_url(video_file)
     download_blob(bucket_name, source_blob_name, 'videos')
-    if not os.path.exists(output_folder):
-        run_i3d(model_folder_name = model_folder_name, 
-                video_name = 'videos' + os.sep + source_blob_name,
-                batch_size = 32,
-                first_how_many= 108000,
-                base_result_dir = (output_folder),
-                exp_name = 'rkakodka')
+    dirname = os.path.dirname(output_folder)
+    Path(dirname).mkdir(parents= True, exist_ok=True)
+    run_i3d(model_folder_name = model_folder_name, 
+            video_name = 'videos' + os.sep + source_blob_name,
+            batch_size = 32,
+            first_how_many= 108000,
+            base_result_dir = (output_folder),
+            exp_name = 'rkakodka')
 
 def parse_args():
 
