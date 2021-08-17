@@ -49,7 +49,8 @@ class MouseDataset(Dataset):
     #accumilator for pytorch indexer
     ind_for_dict_frames = 0
     #load all label files into one dataframe
-    for file in glob.glob(annotation_path + '*.json'):#[0:1]:     
+    for file in glob.glob(annotation_path + '*.json'):#[0:1]:  
+      print(file)   
       #load labels and embs
       labels = pd.read_json(file)
       embs = pd.read_pickle(emb_path + file[file.rfind("/")+1:-5] + ".p")
