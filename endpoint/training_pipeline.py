@@ -1,3 +1,4 @@
+from os import read
 import kfp
 from kfp.v2 import compiler
 from kfp.v2.google.client import AIPlatformClient
@@ -52,10 +53,19 @@ def download_model(source_blob_model: str, model_file: OutputPath()):
     model_bucket = client.bucket(model_url.netloc)
     modelBlob = model_bucket.blob(model_url.path.replace('/',''))
     modelBlob.download_to_filename(model_file)
+
+def read_trained_model(trained_model: InputPath()):
+  f = open(trained_model)
+  print(f)
     
 
 download_blob_step = comp.create_component_from_func(
   download_model,
+  base_image='gcr.io/google.com/cloudsdktool/cloud-sdk:latest',
+)
+
+read_trained_model_step = comp.create_component_from_func(
+  read_trained_model,
   base_image='gcr.io/google.com/cloudsdktool/cloud-sdk:latest',
 )
 
@@ -65,6 +75,7 @@ download_blob_step = comp.create_component_from_func(
     pipeline_root=pipeline_root_path)
 
 def pipeline(project_id: str, model_uri: str, annotation_bucket: str, embedding_bucket: str):
+
     download_blob_op = (download_blob_step(
       model_uri
     ))
@@ -74,6 +85,12 @@ def pipeline(project_id: str, model_uri: str, annotation_bucket: str, embedding_
         annotation_bucket=annotation_bucket,
         embedding_bucket=embedding_bucket,
     )
+
+    read_model_op(read_trained_model_step(
+      cre
+    ))
+
+
     
 
 compiler.Compiler().compile(pipeline_func=pipeline,
