@@ -30,14 +30,12 @@ def preprocess(video_file: str, model_folder_name: str, output_folder: str) -> l
     download_blob(bucket_name, source_blob_name, 'videos')
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
-    pickle_files.append(    run_i3d(model_folder_name = model_folder_name, 
-                                    video_name = 'videos' + os.sep + source_blob_name,
-                                    batch_size = 32,
-                                    first_how_many= 108000,
-                                    base_result_dir = ('videos/' + os.sep + source_blob_name.rstrip('.mp4') +'.p'),
-                                    exp_name = 'rkakodka')  )
-
-    return pickle_files
+        run_i3d(model_folder_name = model_folder_name, 
+                video_name = 'videos' + os.sep + source_blob_name,
+                batch_size = 32,
+                first_how_many= 108000,
+                base_result_dir = (output_folder + os.sep + source_blob_name.rstrip('.mp4') +'.p'),
+                exp_name = 'rkakodka')
 
 def parse_args():
 

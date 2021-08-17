@@ -184,8 +184,6 @@ def run_i3d(model_folder_name = "models",
     #pbar.close()
     print('Finished whole thing in: ', time.time()-global_time)
 
-    return base_result_dir
-
 # def main(unused_argv):
 
 #     JSON_file = FLAGS.video_name
