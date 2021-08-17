@@ -1,4 +1,4 @@
-name: Build Image for endpoint
+name: Build Image for endpoin
 
 on: 
   push:
