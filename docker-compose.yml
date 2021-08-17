@@ -5,6 +5,11 @@ services:
         build:
             context: .
             dockerfile: ./preprocess/Dockerfile
+    inference:
+        image: gcr.io/${PROJECT_ID}/lstm-inference:latest
+        build:
+            context: .
+            dockerfile: ./inference/Dockerfile
     # inference:
     #     image: gcr.io/${{ secrets.PROJECT_ID}}/LSTM_inference:latest
     #     build: ./inference
