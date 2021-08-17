@@ -4,7 +4,6 @@ from genericpath import exists
 def preprocess(video_file: str, model_folder_name: str, output_folder: str) -> list:
     import dask.dataframe as dd
     from get_embedding_nopad import run_i3d
-    from urllib.parse import urlparse
     from pathlib import Path
     import os
 
@@ -23,6 +22,7 @@ def preprocess(video_file: str, model_folder_name: str, output_folder: str) -> l
         )
 
     def parse_url(url: str):
+        from urllib.parse import urlparse
         o = urlparse(url)
         return o.netloc, o.path.lstrip('/')
 
