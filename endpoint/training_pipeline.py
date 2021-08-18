@@ -83,9 +83,6 @@ def pipeline(project_id: str, model_uri: str, annotation_bucket: str, embedding_
         'cloud.google.com/gke-accelerator', 'nvidia-tesla-p100'
     ).set_gpu_limit(1)
 
-    read_model_op= (read_trained_model_step(
-        train_step.output
-    ))
 
 
     
