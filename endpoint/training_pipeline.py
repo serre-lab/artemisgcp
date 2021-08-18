@@ -21,7 +21,7 @@ inputs:
 - {name: embedding_bucket, type: String, description: 'Path to Embeddings to use for training'}
 
 outputs:
-- {name: trainedmodel, type: Path, description: 'Output for trained model.'}
+- {name: trainedmodel, type: String, description: 'Output for trained model.'}
 implementation:
   container:
     image: gcr.io/acbm-317517/artemisgcp_training:latest
@@ -54,7 +54,7 @@ def download_model(source_blob_model: str, model_file: OutputPath()):
     modelBlob = model_bucket.blob(model_url.path.replace('/',''))
     modelBlob.download_to_filename(model_file)
 
-def read_trained_model(trained_model: InputPath()):
+def read_trained_model(trained_model: str):
   print(trained_model)
     
 
