@@ -10,6 +10,7 @@ from utils import bal_acc, class_report, plot_confusion_matrix, slackify
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
 from download_blobs import downloadData
+from upload_blob import upload_blob
 from dataset_load_torch import MouseDataset
 import pickle
 import os
@@ -28,12 +29,12 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-m', '--model', help='Path to model URI folder.')
 parser.add_argument('-e', '--emb', help='Path to embs URI folder.', required=True)
 parser.add_argument('-a', '--annotation', help='Path to annotation URI foler', required=True)
-parser.add_argument('-t', '--trainedmodel', help='Path to trained model', required=True)
+
 args = parser.parse_args()
 
 
 #download blobs to container based on argument
-downloadData(annotation_bucket_name=args.annotation, embedding_bucket_name=args.emb)
+#downloadData(annotation_bucket_name=args.annotation, embedding_bucket_name=args.emb)
 
 #f = open('annotations/Trap2_FC-A-1-12-Postfear_new_video_2019Y_02M_23D_05h_30m_06s_cam_6394846-0000.mp4_training_annotations.json')
 
@@ -153,7 +154,9 @@ if __name__ == '__main__':
              loss_100 = []
              model.train()
              if b_acc==max(baccs) and b_acc>0.7:
-                torch.save(model.state_dict(), args.trainedmodel)
+                model_name = 'model_acc_{}'.format(b_acc)
+                torch.save(model.state_dict(), model_name)
+                upload_blob(args.annotation, model_name, 'trained_models/' + model_name)
                 print("model saved")
      
 
