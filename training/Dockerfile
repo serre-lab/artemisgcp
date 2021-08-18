@@ -12,7 +12,7 @@ WORKDIR ./training
 
 # local files
 #COPY ["./acbm-317517-7d3150de2508.json", "./"]
-COPY ["./training/utils.py", "./training/dataset_load_torch.py", "./training/requirements.txt", "./training/training_runjob.sh", "./training/main_training.py", "./training/baseline.py", "./training/download_blobs.py", "./"]
+COPY ["./training/utils.py", "./training/dataset_load_torch.py", "./training/requirements.txt", "./training/training_runjob.sh", "./training/main_training.py", "./training/baseline.py", "./training/download_blobs.py", "./training/upload_blob.py", "./"]
 
 # git lfs files
 #RUN curl -O https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh &&\
