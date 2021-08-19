@@ -9,43 +9,7 @@ project_id = 'acbm-317517'
 region = 'US-CENTRAL1'
 pipeline_root_path = 'gs://vertex-ai-sdk-pipelines'
 
-# def preprocess(video_file: str, model_folder_name: str) -> list:
-#     import dask.dataframe as dd
-#     from get_embedding_nopad import run_i3d
-#     from urllib.parse import urlparse
-#     import os
-
-#     def download_blob(bucket_name, source_blob_name, destination_folder):
-#         from google.cloud import storage
-#         storage_client = storage.Client()
-#         bucket = storage_client.bucket(bucket_name)
-#         blob = bucket.blob(source_blob_name)
-#         print(destination_folder + os.sep + source_blob_name)
-#         blob.download_to_filename(destination_folder + os.sep + source_blob_name)
-
-#         print(
-#             "Blob {} downloaded to {}.".format(
-#                 source_blob_name, destination_folder + os.sep + source_blob_name
-#             )
-#         )
-
-#     def parse_url(url: str):
-#         o = urlparse(url)
-#         return o.netloc, o.path.lstrip('/')
-
-#     pickle_files = []
-
-#     bucket_name, source_blob_name = parse_url(video_file)
-#     print(bucket_name, source_blob_name)
-#     download_blob(bucket_name, source_blob_name, '/preprocess/videos')
-#     pickle_files.append(    run_i3d(model_folder_name = model_folder_name, 
-#                                     video_name = '/preprocess/videos' + os.sep + source_blob_name,
-#                                     base_result_dir = 'videos',
-#                                     exp_name = 'rkakodka')  )
-
-#     return pickle_files
-
-preprocess_component = comp.load_component_from_text("""
+preprocess_component = comp.load_component_from_file("""
 name: Get embeddings
 description: Run the i3d model to get embeddings
 
@@ -100,23 +64,10 @@ implementation:
       {outputPath: Predictions}
     ]""")
 
-# def inference(embeddings: kfp.dsl.io_types.Output[kfp.dsl.io_types.Artifact()]):
-
-#     import os
-#     import logging
-#     logging.basicConfig(level=logging.INFO)
-#     logging.info('The embeddings file is : {}'.format(embeddings))
-
 @kfp.dsl.pipeline(
     name="automl-image-inference-v2",
     pipeline_root=pipeline_root_path)
 def pipeline(project_id: str, video_file: str):
-
-    # preprocess_step = comp.create_component_from_func(
-    #     preprocess,
-    #     base_image='gcr.io/acbm-317517/i3d-preprocess'
-    #     )
-
     preprocess_op = (preprocess_component(
         video_uri = video_file,
         model_uri= 'models/',
