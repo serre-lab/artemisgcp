@@ -9,7 +9,7 @@ project_id = 'acbm-317517'
 region = 'US-CENTRAL1'
 pipeline_root_path = 'gs://vertex-ai-sdk-pipelines'
 
-preprocess_component = comp.load_component_from_file("""
+preprocess_component = comp.load_component_from_text("""
 name: Get embeddings
 description: Run the i3d model to get embeddings
 
