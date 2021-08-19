@@ -64,7 +64,7 @@ if __name__ == '__main__':
     
     model = BiStackedLSTMOne(input_size=1024, hidden_sizes=[256], num_classes=9, num_steps=16)
     model = model.cuda()
-    model.load_state_dict(torch.load('/inference/models/model0.9573332767722087.pth'))
+    model.load_state_dict(torch.load('/workspace/inference/models/model0.9573332767722087.pth'))
     model.eval()
 
     # emb_base_dir = '/cifs/data/tserre_lrs/projects/prj_nih/prj_andrew_holmes/inference/inference_i3d/'
