@@ -14,36 +14,36 @@ import pickle
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import tensorflow as tf
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
-from absl import flags
-from absl import app
+# from absl import flags
+# from absl import app
 import time
 from central_reservoir.models import i3d
 from read_videos import VideoIterator, preprocessing_raw, preprocessing_raw_new,\
         postprocessing_predicted_labels, _mkdir
-from tqdm import tqdm
-import dask.dataframe as dd
+# from tqdm import tqdm
+# import dask.dataframe as dd
 
-FLAGS = flags.FLAGS
+# FLAGS = flags.FLAGS
 
-flags.DEFINE_string('model_folder_name', default="/cifs/data/tserre/CLPS_Serre_Lab/projects/prj_nih/prj_andrew_holmes/inference/i3d_full_processed_nih/",
-    help='To mention the model path')
+# flags.DEFINE_string('model_folder_name', default="/cifs/data/tserre/CLPS_Serre_Lab/projects/prj_nih/prj_andrew_holmes/inference/i3d_full_processed_nih/",
+#     help='To mention the model path')
 
-flags.DEFINE_string('video_name', default=None,
-    help='The video folder format')
+# flags.DEFINE_string('video_name', default=None,
+#     help='The video folder format')
 
-flags.DEFINE_integer('step', default=24600,
-    help='To specify the checkpoint')
-flags.DEFINE_integer('how_many_per_folder', default=1,
-    help='How many videos to process per folder')
-flags.DEFINE_integer('batch_size', default=50,
-    help='Processing batch size')
-flags.DEFINE_integer('first_how_many', default=8000,
-    help='Process first how many frames of each video')
+# flags.DEFINE_integer('step', default=24600,
+#     help='To specify the checkpoint')
+# flags.DEFINE_integer('how_many_per_folder', default=1,
+#     help='How many videos to process per folder')
+# flags.DEFINE_integer('batch_size', default=50,
+#     help='Processing batch size')
+# flags.DEFINE_integer('first_how_many', default=8000,
+#     help='Process first how many frames of each video')
 
-flags.DEFINE_string('base_result_dir', default="./result_dir", 
-    help='Base result directory')
-flags.DEFINE_string('exp_name', default="..", 
-    help='current experiment name')
+# flags.DEFINE_string('base_result_dir', default="./result_dir", 
+#     help='Base result directory')
+# flags.DEFINE_string('exp_name', default="..", 
+#     help='current experiment name')
 
 BEHAVIOR_INDICES = {
     0:"drink",
@@ -56,7 +56,7 @@ BEHAVIOR_INDICES = {
     7:"walk",
     8:"eathand"}
 
-def run_i3d(model_folder_name = "/cifs/data/tserre/CLPS_Serre_Lab/projects/prj_nih/prj_andrew_holmes/inference/i3d_full_processed_nih/", 
+def run_i3d(model_folder_name = "models", 
             step = 24600,
             video_name = None,
             how_many_per_folder = 1,
@@ -70,11 +70,11 @@ def run_i3d(model_folder_name = "/cifs/data/tserre/CLPS_Serre_Lab/projects/prj_n
         model_folder_name,
         'model.ckpt-{}'.format(step))
     meta_path = os.path.join(
-        FLAGS.model_folder_name,
+        model_folder_name,
         'model.ckpt-{}.meta'.format(step))
 
     video_folders = glob.glob(video_name)
-    _mkdir(os.path.join(base_result_dir, exp_name))
+    # _mkdir(os.path.join(base_result_dir, exp_name))
 
     config = tf.ConfigProto(intra_op_parallelism_threads=1, inter_op_parallelism_threads=1, \
                         allow_soft_placement=True, device_count = {'CPU': 1})
@@ -148,7 +148,8 @@ def run_i3d(model_folder_name = "/cifs/data/tserre/CLPS_Serre_Lab/projects/prj_n
                         # The way of naming the csv files is related to 
                         # the name matching algorithm in BABAS
                         vid_path_elem = video_folder.split('/')
-                        with open(os.path.join(base_result_dir, exp_name, pre_name.rstrip(".mp4") + ".p"), 'wb') as f:
+                        # pickle_file = os.path.join(base_result_dir, exp_name, pre_name.rstrip(".mp4") + ".p")
+                        with open(base_result_dir, 'wb') as f:
                             pickle.dump(all_preds, f)
 
                         # Refresh the loop dependent variable
@@ -172,7 +173,7 @@ def run_i3d(model_folder_name = "/cifs/data/tserre/CLPS_Serre_Lab/projects/prj_n
                     chunk_count += batch_size
                     
                     time_batch.append(time.time() - start)
-                    print("vid: %s with %d chunks READ: \033[1;33m %f (%f)\033[0;0m WHOLE: \033[1;33m %f (%f)\033[0;0m" % (os.path.join(FLAGS.exp_name, pre_name), chunk_count, time_read[-1], np.mean(time_read), time_batch[-1], np.mean(time_batch)))
+                    print("vid: %s with %d chunks READ: \033[1;33m %f (%f)\033[0;0m WHOLE: \033[1;33m %f (%f)\033[0;0m" % (os.path.join(exp_name, pre_name), chunk_count, time_read[-1], np.mean(time_read), time_batch[-1], np.mean(time_batch)))
                     #pbar.update(FLAGS.batch_size)
                     
                     #print ('Time elapsed one batch: %f %f'%(time_batch[-1], np.mean(time_batch)))
@@ -183,21 +184,21 @@ def run_i3d(model_folder_name = "/cifs/data/tserre/CLPS_Serre_Lab/projects/prj_n
     #pbar.close()
     print('Finished whole thing in: ', time.time()-global_time)
 
-def main(unused_argv):
+# def main(unused_argv):
 
-    JSON_file = FLAGS.video_name
+#     JSON_file = FLAGS.video_name
 
-    dataframe = dd.read_json(JSON_file).compute()
+#     dataframe = dd.read_json(JSON_file).compute()
 
-    for index, row in dataframe.iterrows():
-        run_i3d(model_folder_name = FLAGS.model_folder_name, 
-                video_name = row['videoGcsUri'],
-                batch_size = FLAGS.batch_size,
-                first_how_many = FLAGS.first_how_many,
-                base_result_dir = FLAGS.base_result_dir,
-                exp_name = FLAGS.exp_name)
+#     for index, row in dataframe.iterrows():
+#         run_i3d(model_folder_name = FLAGS.model_folder_name, 
+#                 video_name = row['videoGcsUri'],
+#                 batch_size = FLAGS.batch_size,
+#                 first_how_many = FLAGS.first_how_many,
+#                 base_result_dir = FLAGS.base_result_dir,
+#                 exp_name = FLAGS.exp_name)
 
-if __name__ == '__main__':
+# if __name__ == '__main__':
     
-    app.run(main)
+#     app.run(main)
     

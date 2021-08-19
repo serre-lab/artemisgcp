@@ -1,22 +1,56 @@
-FROM gcr.io/deeplearning-platform-release/tf-gpu.1-15
+###LFS RUNNER
+# Git LFS runner to get the models from large file storage
+FROM ubuntu AS lfs_runner
 
-RUN apt update
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y git && \
+    apt-get install git-lfs && \
+    git lfs install
 
+RUN git clone https://github.com/serre-lab/artemisgcp.git
+
+RUN ls -ltr
+
+# download models from lfs
+RUN cd artemisgcp && \
+    git lfs pull -I i3d/models
+
+### MAIN CONTAINER
+FROM tensorflow/tensorflow:1.15.5-gpu-py3
+
+RUN apt update && \
+    apt-get install ffmpeg libsm6 libxext6  -y
+
+# make directories
 RUN mkdir -p preprocess && \
-    mkdir -p preprocess/central_reservoir && \
-    mkdir -p preprocess/models
+    mkdir -p preprocess/models && \
+    mkdir -p preprocess/videos
 
 WORKDIR ./preprocess
 
-COPY ["./preprocess/get_embedding_nopad.py", "./preprocess/read_videos.py", "./preprocess/requirements.txt", "./"]
+COPY ["./preprocess", "./"]
 
-COPY ["./i3d/models", "./models"]
-
-COPY ["./preprocess/central_reservoir", "./central_reservoir"]
+# Copy git lfs files
+COPY --from=lfs_runner ["./artemisgcp/i3d/models", "./models"]
 
 RUN pip install pickle-mixin && \
     pip install PIMS==0.5 && \
     pip install opencv-python==4.4.0.42 && \
-    pip install "dask[complete]"
+    pip install "dask[complete]" && \
+    pip install moviepy && \
+    pip install google-cloud-storage
 
-ENTRYPOINT ["/usr/bin/env"]
+# Downloading gcloud package
+RUN curl https://dl.google.com/dl/cloudsdk/release/google-cloud-sdk.tar.gz > /tmp/google-cloud-sdk.tar.gz
+
+# Installing the package
+RUN mkdir -p /usr/local/gcloud \
+  && tar -C /usr/local/gcloud -xvf /tmp/google-cloud-sdk.tar.gz \
+  && /usr/local/gcloud/google-cloud-sdk/install.sh
+
+# Adding the package path to local
+ENV PATH $PATH:/usr/local/gcloud/google-cloud-sdk/bin
+ENV PYTHONPATH /preprocess:$PYTHONPATH
+
+ENTRYPOINT ["/bin/bash"]
