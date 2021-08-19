@@ -85,11 +85,11 @@ if __name__ == '__main__':
 
     print(full_emb_file)
 
-    bucket_name, source_blob_name = parse_url(full_emb_file)
-    download_blob(bucket_name, source_blob_name, 'embeddings')
-    dirname = os.path.dirname(save_file_name)
+    # bucket_name, source_blob_name = parse_url(full_emb_file)
+    # download_blob(bucket_name, source_blob_name, 'embeddings')
+    # dirname = os.path.dirname(save_file_name)
     Path(dirname).mkdir(parents= True, exist_ok=True)
-    full_emb_file = 'embeddings' + os.sep + source_blob_name
+    # full_emb_file = 'embeddings' + os.sep + source_blob_name
 
     mousedata = MouseDataset(full_emb_file)
     inf_loader = DataLoader(mousedata, batch_size=bsize, shuffle=False, pin_memory=True, num_workers=num_work_dataload)
