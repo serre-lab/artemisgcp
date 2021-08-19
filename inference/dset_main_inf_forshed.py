@@ -87,7 +87,7 @@ if __name__ == '__main__':
 
     # bucket_name, source_blob_name = parse_url(full_emb_file)
     # download_blob(bucket_name, source_blob_name, 'embeddings')
-    # dirname = os.path.dirname(save_file_name)
+    dirname = os.path.dirname(save_file_name)
     Path(dirname).mkdir(parents= True, exist_ok=True)
     # full_emb_file = 'embeddings' + os.sep + source_blob_name
 
