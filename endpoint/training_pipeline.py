@@ -41,6 +41,7 @@ implementation:
 def download_model(source_blob_model: str, model_file: OutputPath()):
     import subprocess
     subprocess.run(["pip", "install", "google-cloud-storage"])
+    import os
     from google.cloud import storage
     from urllib.parse import urlparse
 
@@ -49,6 +50,7 @@ def download_model(source_blob_model: str, model_file: OutputPath()):
     model_bucket = client.bucket(model_url.netloc)
     modelBlob = model_bucket.blob(model_url.path.replace('/',''))
     modelBlob.download_to_filename(model_file)
+    
 
 def read_trained_model(trained_model: InputPath()):
   f = open(trained_model)
@@ -82,11 +84,8 @@ def pipeline(project_id: str, model_uri: str, annotation_bucket: str, embedding_
     ).add_node_selector_constraint(
         'cloud.google.com/gke-accelerator', 'nvidia-tesla-p100'
     ).set_gpu_limit(1)
-
-
-
     
-
+    
 compiler.Compiler().compile(pipeline_func=pipeline,
         package_path='training_pipeline.json')
 
@@ -104,4 +103,5 @@ response = api_client.create_run_from_job_spec(
 
 
 
-#add blob downloader for training process for now. then talk to people about how to separate and pass through
+#Add task thing to get access to ai_model_dir
+#save model to aip_model_bucket instead
