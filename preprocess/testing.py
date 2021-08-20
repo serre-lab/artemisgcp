@@ -17,7 +17,7 @@ def preprocess(video_file: str, model_folder_name: str, output_folder: str) -> l
 
         print(
             "Blob {} downloaded to {}.".format(
-                source_blob_name, destination_folder + os.sep + source_blob_name
+                source_blob_name, destination_folder + os.sep + os.path.basename(source_blob_name)
             )
         )
 
@@ -33,7 +33,7 @@ def preprocess(video_file: str, model_folder_name: str, output_folder: str) -> l
     dirname = os.path.dirname(output_folder)
     Path(dirname).mkdir(parents= True, exist_ok=True)
     run_i3d(model_folder_name = model_folder_name, 
-            video_name = 'videos' + os.sep + source_blob_name,
+            video_name = 'videos' + os.sep + os.path.basename(source_blob_name),
             batch_size = 32,
             first_how_many= 108000,
             base_result_dir = (output_folder),
