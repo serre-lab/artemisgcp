@@ -1,22 +1,15 @@
-from os import read
 import kfp
 from kfp.v2 import compiler
 from kfp.v2.google.client import AIPlatformClient
-import time
 from google.cloud import aiplatform
 from google_cloud_pipeline_components import aiplatform as gcc_aip
 from kubernetes.client.models import V1EnvVar
 import kfp.components as comp
 from kfp.components import InputPath, InputTextFile, OutputPath, OutputTextFile
-from kfp.v2.google import experimental
-
 
 project_id = 'acbm-317517'
 region = 'us-central1'
 pipeline_root_path = 'gs://vertex-ai-sdk-pipelines'
-
-ts = int(time.time())
-WORKING_DIR = f"{pipeline_root_path}/{ts}"
 
 create_step_train = comp.load_component_from_text("""
 name: Train Model
@@ -25,8 +18,8 @@ inputs:
 - {name: model_uri, type: Path, description: 'Path to Base Model to be trained'}
 - {name: annotation_bucket, type: String, description: 'Path to Annotations to use for training'}
 - {name: embedding_bucket, type: String, description: 'Path to Embeddings to use for training'}
-- {name: save_model_uri, type: String, description: 'Path to Annotations to use for training'}
-
+outputs:
+- {name: trainedmodel, type: String, description: 'Output for trained model.'}
 implementation:
   container:
     image: gcr.io/acbm-317517/artemisgcp_training:latest
@@ -43,14 +36,13 @@ implementation:
       {inputValue: embedding_bucket},
       --annotation, 
       {inputValue: annotation_bucket},
-      --save, 
-      {inputValue: save_model_uri},
+      --trainedmodel,
+      {outputPath: trainedmodel},
     ]""")
 
 def download_model(source_blob_model: str, model_file: OutputPath()):
     import subprocess
     subprocess.run(["pip", "install", "google-cloud-storage"])
-    import os
     from google.cloud import storage
     from urllib.parse import urlparse
 
@@ -59,20 +51,10 @@ def download_model(source_blob_model: str, model_file: OutputPath()):
     model_bucket = client.bucket(model_url.netloc)
     modelBlob = model_bucket.blob(model_url.path.replace('/',''))
     modelBlob.download_to_filename(model_file)
-    print(os.environ['AIP_MODEL_DIR'])
-    
-
-def read_trained_model(trained_model: InputPath()):
-  f = open(trained_model)
     
 
 download_blob_step = comp.create_component_from_func(
   download_model,
-  base_image='gcr.io/google.com/cloudsdktool/cloud-sdk:latest',
-)
-
-read_trained_model_step = comp.create_component_from_func(
-  read_trained_model,
   base_image='gcr.io/google.com/cloudsdktool/cloud-sdk:latest',
 )
 
@@ -82,7 +64,6 @@ read_trained_model_step = comp.create_component_from_func(
     pipeline_root=pipeline_root_path)
 
 def pipeline(project_id: str, model_uri: str, annotation_bucket: str, embedding_bucket: str):
-
     download_blob_op = (download_blob_step(
       model_uri
     ))
@@ -91,16 +72,9 @@ def pipeline(project_id: str, model_uri: str, annotation_bucket: str, embedding_
         model_uri=download_blob_op.output,
         annotation_bucket=annotation_bucket,
         embedding_bucket=embedding_bucket,
-        save_model_uri=WORKING_DIR,
-    ).add_node_selector_constraint(
-        'cloud.google.com/gke-accelerator', 'nvidia-tesla-p100'
-    ).set_gpu_limit(1)
-
+    )
     
 
-  
-    
-    
 compiler.Compiler().compile(pipeline_func=pipeline,
         package_path='training_pipeline.json')
 
@@ -118,5 +92,4 @@ response = api_client.create_run_from_job_spec(
 
 
 
-#Add task thing to get access to ai_model_dir
-#save model to aip_model_bucket instead
+#add blob downloader for training process for now. then talk to people about how to separate and pass through

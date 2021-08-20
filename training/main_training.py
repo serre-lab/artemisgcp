@@ -1,4 +1,4 @@
-from endpoint.training_pipeline import WORKING_DIR
+
 import torch.nn as nn
 import torch
 import torch.nn.functional as F
