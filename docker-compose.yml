@@ -18,7 +18,7 @@ services:
   endpoint:
     build: ./endpoint
     volumes:
-      - ./endpoint:/app
+      - ${PWD}/endpoint:/app
       - ${CREDENTIAL}:/credentials/credential.json:ro
     command: gunicorn app:app --config=/app/config.py
     ports:
