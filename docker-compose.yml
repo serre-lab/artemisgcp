@@ -13,16 +13,16 @@ services:
     build: 
       context: .
       dockerfile: ./training/Dockerfile
-      cache_from: 
-        - gcr.io/acbm-317517/artemisgcp_training:latest
-  #endpoint:
-  #  build: ./endpoint
-  #  volumes:
-  #    - ./endpoint:/app
-  #    - ${CREDENTIAL}:/credentials/credential.json:ro
-  #  container_name: gcp_endpoint
-  #  command: gunicorn app:app --config=/app/config.py
-  #  ports:
-  #    - "8080:8080"
+      #cache_from: 
+      #  - gcr.io/acbm-317517/artemisgcp_training:latest
+  endpoint:
+    build: ./endpoint
+    volumes:
+      - ./endpoint:/app
+      - ${CREDENTIAL}:/credentials/credential.json:ro
+    container_name: gcp_endpoint
+    command: gunicorn app:app --config=/app/config.py
+    ports:
+      - "8080:8080"
     
    

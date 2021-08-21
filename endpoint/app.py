@@ -17,8 +17,8 @@ app = Flask(__name__)
 @app.route('/prediction', methods=['POST','GET'])
 def prediction():
     output = subprocess.check_output("ls /credentials", shell=True)
-    print(output, flush=True)
-    return jsonify("yes")
+    print(os.environ['MODEL_PATH'])
+    return {"predictions": os.environ['MODEL_PATH']}
 
 @app.route('/health', methods=['POST','GET'])
 def healthcheck():

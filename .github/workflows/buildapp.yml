@@ -29,9 +29,10 @@ jobs:
       - name: Build and Push Image
         run: |
           docker-compose up 
-          docker image ls
           docker tag artemisgcp_training:latest gcr.io/${{ secrets.PROJECT_ID}}/artemisgcp_training:latest
+          docker tag artemisgcp_endpoint:latest gcr.io/${{ secrets.PROJECT_ID}}/artemisgcp_endpoint:latest
           docker push gcr.io/${{ secrets.PROJECT_ID}}/artemisgcp_training:latest
+          docker push gcr.io/${{ secrets.PROJECT_ID}}/artemisgcp_endpoint:latest
 
           
       
