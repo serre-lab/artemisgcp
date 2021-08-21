@@ -17,9 +17,6 @@ services:
       #  - gcr.io/acbm-317517/artemisgcp_training:latest
   endpoint:
     build: ./endpoint
-    volumes:
-      - ${PWD}/endpoint:/app
-      - ${CREDENTIAL}:/credentials/credential.json:ro
     command: gunicorn app:app --config=/app/config.py
     ports:
       - "8080:8080"
