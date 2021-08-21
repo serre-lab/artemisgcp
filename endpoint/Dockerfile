@@ -3,15 +3,15 @@ FROM python:3.6-jessie
 RUN apt update
 
 #set working directory
-WORKDIR /app
+WORKDIR ./app
 
 #handle installing python dependencies
-ADD requirements.txt /app/requirements.txt
+ADD ./endpoint/requirements.txt /app/requirements.txt
 RUN pip install -r /app/requirements.txt
 
 #add folders and files to container
 ADD . /app
-ADD inference_pipeline.py /app/inference_pipeline.py
+ADD ./endpoint/inference_pipeline.py /app/inference_pipeline.py
 
 #set environment variables
 #server variables
