@@ -18,7 +18,6 @@ services:
   endpoint:
     build: ./endpoint
     volumes:
-      - ./endpoint:/app
       - ${CREDENTIAL}:/credentials/credential.json:ro
     container_name: gcp_endpoint
     command: gunicorn app:app --config=/app/config.py
