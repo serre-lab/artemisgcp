@@ -18,8 +18,8 @@ inputs:
 - {name: model_uri, type: Path, description: 'Path to Base Model to be trained'}
 - {name: annotation_bucket, type: String, description: 'Path to Annotations to use for training'}
 - {name: embedding_bucket, type: String, description: 'Path to Embeddings to use for training'}
-outputs:
-- {name: trainedmodel, type: String, description: 'Output for trained model.'}
+- {name: save_bucket, type: String, description: 'Path to trained model to use for training'}
+
 implementation:
   container:
     image: gcr.io/acbm-317517/artemisgcp_training:latest
@@ -36,8 +36,8 @@ implementation:
       {inputValue: embedding_bucket},
       --annotation, 
       {inputValue: annotation_bucket},
-      --trainedmodel,
-      {outputPath: trainedmodel},
+      --save,
+      {inputValue: save_bucket},
     ]""")
 
 def download_model(source_blob_model: str, model_file: OutputPath()):
@@ -45,12 +45,13 @@ def download_model(source_blob_model: str, model_file: OutputPath()):
     subprocess.run(["pip", "install", "google-cloud-storage"])
     from google.cloud import storage
     from urllib.parse import urlparse
-
+ 
     client = storage.Client()
     model_url = urlparse(source_blob_model)
     model_bucket = client.bucket(model_url.netloc)
     modelBlob = model_bucket.blob(model_url.path.replace('/',''))
     modelBlob.download_to_filename(model_file)
+  
     
 
 download_blob_step = comp.create_component_from_func(
@@ -67,12 +68,27 @@ def pipeline(project_id: str, model_uri: str, annotation_bucket: str, embedding_
     download_blob_op = (download_blob_step(
       model_uri
     ))
+    print(pipeline_root_path)
     
     train_step = create_step_train(
         model_uri=download_blob_op.output,
         annotation_bucket=annotation_bucket,
         embedding_bucket=embedding_bucket,
-    )
+        save_bucket=pipeline_root_path,
+    ).add_node_selector_constraint(
+        'cloud.google.com/gke-accelerator', 'nvidia-tesla-p100'
+    ).set_gpu_limit(1)
+
+    model_upload_op = gcc_aip.ModelUploadOp(
+      project=project_id,
+      display_name='lstm_trained_model',
+      artifact_uri=pipeline_root_path,
+      serving_container_image_uri='gcr.io/acbm-317517/gcp-app:latest',
+      serving_container_environment_variables={"MODEL_PATH": "{}".format(pipeline_root_path)},
+  )
+    model_upload_op.after(train_step)
+    
+
     
 
 compiler.Compiler().compile(pipeline_func=pipeline,

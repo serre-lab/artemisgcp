@@ -18,6 +18,7 @@ import os
 import time
 import argparse
 import logging
+from urllib.parse import urlparse
 logging.basicConfig(level=logging.INFO)
 logging.info('The video main training code is running')
 
@@ -33,7 +34,8 @@ parser.add_argument('-a', '--annotation', help='Path to annotation URI foler', r
 parser.add_argument('-s', '--save', help='Path to annotation URI foler', required=True)
 
 args = parser.parse_args()
-print(args.save)
+parsedSave= urlparse(args.save)
+
 
 #download blobs to container based on argument
 downloadData(annotation_bucket_name=args.annotation, embedding_bucket_name=args.emb)
@@ -158,7 +160,7 @@ if __name__ == '__main__':
              if b_acc==max(baccs) and b_acc>0.7:
                 model_name = 'model_acc_{}'.format(b_acc)
                 torch.save(model.state_dict(), model_name)
-                upload_blob(args.annotation, model_name, WORKING_DIR + model_name)
+                upload_blob(parsedSave.netloc, model_name, model_name)
                 print("model saved")
      
 
