@@ -16,7 +16,6 @@ app = Flask(__name__)
 
 @app.route('/prediction', methods=['POST','GET'])
 def prediction():
-    output = subprocess.check_output("ls /credentials", shell=True)
     print(os.environ['MODEL_PATH'])
     return {"predictions": os.environ['MODEL_PATH']}
 
