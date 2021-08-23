@@ -7,7 +7,7 @@ WORKDIR ./app
 
 #handle installing python dependencies
 COPY ./endpoint/requirements.txt /app/requirements.txt
-RUN pip install -r /app/requirements.txt
+
 
 #add folders and files to container
 COPY ["./endpoint/app.py", "./endpoint/config.py", "./endpoint/inference_pipeline.py", "./"]
@@ -21,7 +21,9 @@ ENV project_id 'acbm-317517'
 ENV region 'US-CENTRAL1'
 ENV pipeline_root_path 'gs://vertex-ai-sdk-pipelines'
 
-ENTRYPOINT ["/bin/bash"]
 
+
+RUN pip install -r /app/requirements.txt
 RUN python inference_pipeline.py
 
+ENTRYPOINT ["/bin/bash"]
