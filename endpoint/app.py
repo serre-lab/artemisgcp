@@ -16,7 +16,7 @@ app = Flask(__name__)
 
 @app.route('/prediction', methods=['POST','GET'])
 def prediction():
-    print(os.environ['MODEL_PATH'])
+    
     return {"predictions": os.environ['MODEL_PATH']}
 
 @app.route('/health', methods=['POST','GET'])
