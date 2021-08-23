@@ -81,12 +81,25 @@ def pipeline(project_id: str, model_uri: str, annotation_bucket: str, embedding_
 
     model_upload_op = gcc_aip.ModelUploadOp(
       project=project_id,
-      display_name='lstm_trained_model_2',
+      display_name='lstm_trained_model_3',
       artifact_uri=pipeline_root_path,
       serving_container_image_uri='gcr.io/acbm-317517/artemisgcp_training:latest',
       serving_container_environment_variables={"MODEL_PATH": "{}".format(pipeline_root_path)},
   )
     model_upload_op.after(train_step)
+
+    endpoint_create_op = gcc_aip.EndpointCreateOp(
+        project=project_id,
+        display_name="pipelines-created-endpoint",
+    )
+
+    model_deploy_op = gcc_aip.ModelDeployOp(  # noqa: F841
+        project=project_id,
+        endpoint=endpoint_create_op.outputs["endpoint"],
+        model=model_upload_op.outputs["model"],
+        deployed_model_display_name="lstm_trained_model_3",
+        machine_type="n1-standard-4",
+    )
     
 
     
