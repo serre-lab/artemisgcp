@@ -81,7 +81,7 @@ def pipeline(project_id: str, model_uri: str, annotation_bucket: str, embedding_
 
     model_upload_op = gcc_aip.ModelUploadOp(
       project=project_id,
-      display_name='lstm_trained_model',
+      display_name='lstm_trained_model_2',
       artifact_uri=pipeline_root_path,
       serving_container_image_uri='gcr.io/acbm-317517/artemisgcp_training:latest',
       serving_container_environment_variables={"MODEL_PATH": "{}".format(pipeline_root_path)},

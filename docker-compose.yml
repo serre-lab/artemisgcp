@@ -19,6 +19,9 @@ services:
     build:
       context: .
       dockerfile: ./endpoint/Dockerfile
+    volumes:
+      - ./endpoint/:/app/
+    command: gunicorn app:app --config=/app/config.py
     ports:
       - "8080:8080"
     
