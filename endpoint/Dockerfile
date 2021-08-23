@@ -1,4 +1,4 @@
-FROM python:3.6-jessie
+FROM python:3.6
 
 RUN apt update
 
@@ -21,9 +21,9 @@ ENV project_id 'acbm-317517'
 ENV region 'US-CENTRAL1'
 ENV pipeline_root_path 'gs://vertex-ai-sdk-pipelines'
 
+ENTRYPOINT ["/bin/bash"]
 
 
 RUN pip install -r /app/requirements.txt
 RUN python inference_pipeline.py
 
-ENTRYPOINT ["/bin/bash"]
