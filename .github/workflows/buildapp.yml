@@ -29,7 +29,7 @@ jobs:
       - name: Build and Push Image
         run: |
           cd endpoint
-          docker build -t artemis_endpoint . 
+          docker build -t artemisgcp_endpoint . 
           
           
           docker tag artemisgcp_endpoint:latest gcr.io/${{ secrets.PROJECT_ID}}/artemisgcp_endpoint:latest
