@@ -28,10 +28,12 @@ jobs:
         continue-on-error: true
       - name: Build and Push Image
         run: |
-          docker-compose build
-          docker tag artemisgcp_training:latest gcr.io/${{ secrets.PROJECT_ID}}/artemisgcp_training:latest
+          cd endpoint
+          docker build -t artemis_endpoint . 
+          
+          
           docker tag artemisgcp_endpoint:latest gcr.io/${{ secrets.PROJECT_ID}}/artemisgcp_endpoint:latest
-          docker push gcr.io/${{ secrets.PROJECT_ID}}/artemisgcp_training:latest
+         
           docker push gcr.io/${{ secrets.PROJECT_ID}}/artemisgcp_endpoint:latest
 
           
@@ -41,3 +43,7 @@ jobs:
 # docker build --tag gcp-app .
 # docker tag gcp-app:latest gcr.io/${{ secrets.PROJECT_ID}}/gcp-app:latest
 # docker push gcr.io/${{ secrets.PROJECT_ID}}/gcp-app:latest
+
+# docker-compose build
+# docker tag artemisgcp_training:latest gcr.io/${{ secrets.PROJECT_ID}}/artemisgcp_training:latest
+# docker push gcr.io/${{ secrets.PROJECT_ID}}/artemisgcp_training:latest

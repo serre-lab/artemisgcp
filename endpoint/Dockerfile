@@ -6,11 +6,11 @@ RUN apt update
 WORKDIR ./app
 
 #handle installing python dependencies
-COPY ./endpoint/requirements.txt /app/requirements.txt
+COPY ./requirements.txt /app/requirements.txt
 
 
 #add folders and files to container
-COPY ["./endpoint/app.py", "./endpoint/config.py", "./endpoint/inference_pipeline.py", "./"]
+COPY ["./app.py", "./config.py", "./inference_pipeline.py", "./"]
 
 #set environment variables
 #server variables
