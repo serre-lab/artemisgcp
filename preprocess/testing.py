@@ -12,14 +12,17 @@ def preprocess(video_file: str, model_folder_name: str, output_folder: str) -> l
         storage_client = storage.Client()
         bucket = storage_client.bucket(bucket_name)
         blob = bucket.blob(source_blob_name)
-        print(destination_folder + os.sep + source_blob_name)
-        blob.download_to_filename(destination_folder + os.sep + source_blob_name)
+        destination_filename = destination_folder + os.sep + os.path.basename(source_blob_name)
+        print(destination_filename)
+        blob.download_to_filename(destination_filename)
 
         print(
             "Blob {} downloaded to {}.".format(
-                source_blob_name, destination_folder + os.sep + source_blob_name
+                source_blob_name, destination_filename
             )
         )
+
+        return destination_filename
 
     def parse_url(url: str):
         from urllib.parse import urlparse
@@ -29,11 +32,11 @@ def preprocess(video_file: str, model_folder_name: str, output_folder: str) -> l
     pickle_files = []
 
     bucket_name, source_blob_name = parse_url(video_file)
-    download_blob(bucket_name, source_blob_name, 'videos')
+    destination_filename = download_blob(bucket_name, source_blob_name, 'videos')
     dirname = os.path.dirname(output_folder)
     Path(dirname).mkdir(parents= True, exist_ok=True)
     run_i3d(model_folder_name = model_folder_name, 
-            video_name = 'videos' + os.sep + source_blob_name,
+            video_name = destination_filename,
             batch_size = 32,
             first_how_many= 108000,
             base_result_dir = (output_folder),
