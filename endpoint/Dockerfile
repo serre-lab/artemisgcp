@@ -21,7 +21,7 @@ ENV project_id 'acbm-317517'
 ENV region 'US-CENTRAL1'
 ENV pipeline_root_path 'gs://vertex-ai-sdk-pipelines'
 
-
+ENTRYPOINT ["/bin/bash"]
 
 
 RUN pip install -r /app/requirements.txt
