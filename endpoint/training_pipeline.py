@@ -81,7 +81,7 @@ def pipeline(project_id: str, model_uri: str, annotation_bucket: str, embedding_
 
     model_upload_op = gcc_aip.ModelUploadOp(
       project=project_id,
-      display_name='lstm_trained_model_docker2',
+      display_name='lstm_trained_model_docker3',
       serving_container_predict_route='/prediction',
       serving_container_health_route='/health',
       serving_container_image_uri='gcr.io/acbm-317517/artemisgcp_training:latest',
@@ -91,14 +91,14 @@ def pipeline(project_id: str, model_uri: str, annotation_bucket: str, embedding_
 
     endpoint_create_op = gcc_aip.EndpointCreateOp(
         project=project_id,
-        display_name="lstm_treained_model_endpoint2",
+        display_name="lstm_treained_model_endpoint3",
     )
 
     model_deploy_op = gcc_aip.ModelDeployOp( 
         project=project_id,
         endpoint=endpoint_create_op.outputs["endpoint"],
         model=model_upload_op.outputs["model"],
-        deployed_model_display_name="lstm_trained_model_deploy2",
+        deployed_model_display_name="lstm_trained_model_deploy3",
         machine_type="n1-standard-4",
     )
     
