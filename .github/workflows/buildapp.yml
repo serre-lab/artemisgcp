@@ -28,15 +28,9 @@ jobs:
         continue-on-error: true
       - name: Build and Push Image
         run: |
-          cd endpoint
-          docker build -t artemisgcp_endpoint . 
-          
-          
-          docker tag artemisgcp_endpoint:latest gcr.io/${{ secrets.PROJECT_ID}}/artemisgcp_endpoint:latest
-         
-          docker push gcr.io/${{ secrets.PROJECT_ID}}/artemisgcp_endpoint:latest
+          docker-compose up --build
+          docker-compose push
 
-          
       
 
 # cd endpoint

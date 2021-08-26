@@ -1,28 +1,36 @@
 version: "3"
 services:
-  #preprocess:
-   # image: gcr.io/${PROJECT_ID}/i3d-preprocess:latest
-    #build:
-     #   context: .
-      #  dockerfile: ./preprocess/Dockerfile
-    # inference:
-    #     image: gcr.io/${{ secrets.PROJECT_ID}}/LSTM_inference:latest
-    #     build: ./inference
-    #         context: ./LSTM
-  training:
-    build: 
-      context: .
-      dockerfile: ./training/Dockerfile
-      #cache_from: 
-      #  - gcr.io/acbm-317517/artemisgcp_training:latest
-  endpoint:
-    build:
-      context: .
-      dockerfile: ./endpoint/Dockerfile
-    volumes:
-      - ./endpoint/:/app/
-    command: gunicorn app:app --config=/app/config.py
-    ports:
-      - "8080:8080"
-    
+    preprocess:
+        image: gcr.io/${PROJECT_ID}/i3d-preprocess:latest
+        build:
+            context: .
+            dockerfile: ./preprocess/Dockerfile
+    inference:
+        image: gcr.io/${PROJECT_ID}/lstm-inference:latest
+        build:
+            context: .
+            dockerfile: ./inference/Dockerfile
+    utils:
+        image: gcr.io/${PROJECT_ID}/utils:latest
+        build:
+            context: .
+            dockerfile: ./utils/Dockerfile
+    training:
+      image: gcr.io/${PROJECT_ID}/training:latest
+      build: 
+        context: .
+        dockerfile: ./training/Dockerfile
+        #cache_from: 
+        #  - gcr.io/acbm-317517/artemisgcp_training:latest
+    endpoint:
+      image: gcr.io/${PROJECT_ID}/endpoint:latest
+      build:
+        context: .
+        dockerfile: ./endpoint/Dockerfile
+      volumes:
+        - ./endpoint/:/app/
+      command: gunicorn app:app --config=/app/config.py
+      ports:
+        - "8080:8080"
+
    

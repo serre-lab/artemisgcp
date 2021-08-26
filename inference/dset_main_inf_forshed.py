@@ -10,10 +10,11 @@ import csv
 
 import time
 import argparse
+from pathlib import Path
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--expname", type=str, required=True)
 parser.add_argument("--embname", type=str, required=True)
+parser.add_argument("--output_file_name", type=str, required=True)
 #parser.add_argument("--gpu", type=str, required=True)
 args = parser.parse_args()
 
@@ -37,7 +38,25 @@ BEHAVIOR_LABELS = {
 bsize = 256
 num_work_dataload = 8
 
-exp_name = args.expname + '/'
+def download_blob(bucket_name, source_blob_name, destination_folder):
+    from google.cloud import storage
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(bucket_name)
+    blob = bucket.blob(source_blob_name)
+    print(destination_folder + os.sep + source_blob_name)
+    blob.download_to_filename(destination_folder + os.sep + source_blob_name)
+
+    print(
+        "Blob {} downloaded to {}.".format(
+            source_blob_name, destination_folder + os.sep + source_blob_name
+        )
+    )
+
+def parse_url(url: str):
+    from urllib.parse import urlparse
+    o = urlparse(url)
+    return o.netloc, o.path.lstrip('/')
+
 
 if __name__ == '__main__':
     #print('batch size-', bsize)
@@ -45,24 +64,32 @@ if __name__ == '__main__':
     
     model = BiStackedLSTMOne(input_size=1024, hidden_sizes=[256], num_classes=9, num_steps=16)
     model = model.cuda()
-    model.load_state_dict(torch.load('/cifs/data/tserre_lrs/projects/prj_nih/prj_andrew_holmes/bootstrap_code/bi_model/model0.8076610540250448.pth'))
+    model.load_state_dict(torch.load('/workspace/inference/models/model0.9573332767722087.pth'))
     model.eval()
 
-    emb_base_dir = '/cifs/data/tserre_lrs/projects/prj_nih/prj_andrew_holmes/inference/inference_i3d/'
-    emb_dir = emb_base_dir + exp_name
-    emb_file = args.embname
+    # emb_base_dir = '/cifs/data/tserre_lrs/projects/prj_nih/prj_andrew_holmes/inference/inference_i3d/'
+    # emb_dir = emb_base_dir + exp_name
+    # emb_file = args.embname
 
-    save_dir = '/cifs/data/tserre_lrs/projects/prj_nih/prj_andrew_holmes/inference/results_fallon_bsln/' + exp_name
-    if not os.path.exists(save_dir):
-        try:
-            os.mkdir(save_dir)
-        except:
-            pass
+    # save_dir = '/cifs/data/tserre_lrs/projects/prj_nih/prj_andrew_holmes/inference/results_fallon_bsln/' + exp_name
+    # if not os.path.exists(save_dir):
+    #     try:
+    #         os.mkdir(save_dir)
+    #     except:
+    #         pass
 
     #import pdb; pdb.set_trace()
     a = time.time()
-    full_emb_file = os.path.join(emb_dir, emb_file)
-    save_file_name = save_dir + emb_file.replace('.p', '.csv')
+    full_emb_file = args.embname
+    save_file_name = args.output_file_name
+
+    print(full_emb_file)
+
+    # bucket_name, source_blob_name = parse_url(full_emb_file)
+    # download_blob(bucket_name, source_blob_name, 'embeddings')
+    dirname = os.path.dirname(save_file_name)
+    Path(dirname).mkdir(parents= True, exist_ok=True)
+    # full_emb_file = 'embeddings' + os.sep + source_blob_name
 
     mousedata = MouseDataset(full_emb_file)
     inf_loader = DataLoader(mousedata, batch_size=bsize, shuffle=False, pin_memory=True, num_workers=num_work_dataload)

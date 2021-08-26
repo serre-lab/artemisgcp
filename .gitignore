@@ -6,3 +6,6 @@ inference/testing.json
 i3d/testing.json
 aacbm-317517-7d3150de2508.json
 *.json
+acbm-317517-a3a1aa1112d7.json
+*.json
+venv/*
