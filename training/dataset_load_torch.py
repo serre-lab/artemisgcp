@@ -6,7 +6,7 @@ Created on Wed Jun 19 19:49:24 2019
 @author: alekhka & jbeck
 """
 import pickle
-#import os
+import os
 import torch
 from torch.utils.data.dataset import Dataset
 import pandas as pd
@@ -16,7 +16,7 @@ import numpy as np
 ##create tuple with video index and available frame
 
 class MouseDataset(Dataset):
-  def __init__(self, data_path, test=False):
+  def __init__(self, annotation_path, emb_path):
     
     """
     [returns]:
@@ -27,14 +27,13 @@ class MouseDataset(Dataset):
     self.BEHAVIOR_LABELS = {
             "drink": 0,
             "groom": 2,
-            "eat": 1,
+            "eating": 1,
             "hang": 3,
             "sniff": 4,
             "rear": 5,
-            "rest": 6,
+            "resting": 6,
             "walk": 7,
             "eathand": 8,
-            
         }
     #set number of frames associated with label (temporal)
     self.frame_steps = 64
@@ -43,42 +42,27 @@ class MouseDataset(Dataset):
     self.avail_frames = {}
     self.label_dict = {}
     self.emb_dict = {}
-    #data path to ANNOT (where artemis files are saved). Argument passed to class to determine test or train folder
-    if test == False:
-      self.label_path = data_path + "pickle_files/train/"
-    else:
-      self.label_path = data_path + "pickle_files/test/"
-    self.emb_path = data_path + "embs/"
+  
+    
     #set to 0 to use to randomly pick key and keep key conistent between videos and embs
     i = 0 
     #accumilator for pytorch indexer
     ind_for_dict_frames = 0
     #load all label files into one dataframe
-    for file in glob.glob(self.label_path + '*'):#[0:1]:     
+    for file in glob.glob(annotation_path + '*.json'):#[0:1]:  
+      print(file)
+      if os.path.isfile(emb_path + file[file.rfind("/")+1:-5] + ".p") == False:
+        print('embedding file not found. Skipping')
+        continue
+
       #load labels and embs
-      print('attempting to load file:', file)
-      if test == False:
-        labels = pd.read_pickle(file)
-        print("the length of the train labels file is: "+ str(len(labels)) + " : Now loading file")
-        #try:
-        embs = pd.read_pickle(self.emb_path + file[file.rfind("/")+1:-8] + ".p")
-        #except:
-            #continue
-      else:
-        labels = pd.read_pickle(file)
-        print("the length of the test labels file is: "+ str(len(labels)) + " : Now loading file")
-        #try:
-        embs = pd.read_pickle(self.emb_path + file[file.rfind("/")+1:-7] + ".p")
-        #except:
-            #continue
-      #print(file)
+      labels = pd.read_json(file)
+      embs = pd.read_pickle(emb_path + file[file.rfind("/")+1:-5] + ".p")
       labels = labels[labels.pred != 'none']
-      #iterate through label file and find all available files. These set start for first and last frame
-      print(labels.size)
+    
       if labels.size == 0:
         continue 
       frame_one = max(16, labels['frame'].iloc[0])
-      print(frame_one)
       frame_lst = max(16, labels['frame'].iloc[0])
       for index, row in labels.iterrows():     
         if row['pred'] != 'none':
@@ -112,8 +96,10 @@ class MouseDataset(Dataset):
       self.emb_dict.update({i:embs}) #dict with structure {i:{frame:[1024 embs]}}
      
       self.tot_frames = len(self.avail_frames)
+      
       i += 1
       print("The total available frames are: " + str(self.tot_frames))
+      
 
   def __getitem__(self, index):
     #randomly choose index inside accumilator in avail frames dict

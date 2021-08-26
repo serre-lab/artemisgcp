@@ -5,11 +5,60 @@ from google.cloud import aiplatform
 from google_cloud_pipeline_components import aiplatform as gcc_aip
 from kubernetes.client.models import V1EnvVar
 import kfp.components as comp
+from kfp.components import InputPath, InputTextFile, OutputPath, OutputTextFile
 
 
 project_id = 'acbm-317517'
-region = 'US-CENTRAL1'
+region = 'us-central1'
 pipeline_root_path = 'gs://vertex-ai-sdk-pipelines'
+
+create_step_train = comp.load_component_from_text("""
+name: Train Model
+description: trains LSTM model
+inputs:
+- {name: model_uri, type: Path, description: 'Path to Base Model to be trained'}
+- {name: annotation_bucket, type: String, description: 'Path to Annotations to use for training'}
+- {name: embedding_bucket, type: String, description: 'Path to Embeddings to use for training'}
+- {name: save_bucket, type: String, description: 'Path to trained model to use for training'}
+
+implementation:
+  container:
+    image: gcr.io/acbm-317517/artemisgcp_training:latest
+    # command is a list of strings (command-line arguments). 
+    # The YAML language has two syntaxes for lists and you can use either of them. 
+    # Here we use the "flow syntax" - comma-separated strings inside square brackets.
+    command: [
+      python, 
+      # Path of the program inside the container
+      /training/main_training.py,
+      --model,
+      {inputPath: model_uri},
+      --emb, 
+      {inputValue: embedding_bucket},
+      --annotation, 
+      {inputValue: annotation_bucket},
+      --save,
+      {inputValue: save_bucket},
+    ]""")
+
+def download_model(source_blob_model: str, model_file: OutputPath()):
+    import subprocess
+    subprocess.run(["pip", "install", "google-cloud-storage"])
+    from google.cloud import storage
+    from urllib.parse import urlparse
+ 
+    client = storage.Client()
+    model_url = urlparse(source_blob_model)
+    model_bucket = client.bucket(model_url.netloc)
+    modelBlob = model_bucket.blob(model_url.path.replace('/',''))
+    modelBlob.download_to_filename(model_file)
+  
+    
+
+download_blob_step = comp.create_component_from_func(
+  download_model,
+  base_image='gcr.io/google.com/cloudsdktool/cloud-sdk:latest',
+)
 
 def print_hello():
     print('Hello')
@@ -114,27 +163,66 @@ implementation:
       {outputPath: pickled_output},
     ]""")
 
+#KFP pipeline. Needs name and root path where artifacts stored
 @kfp.dsl.pipeline(
-    name="automl-image-training-v2",
+    name="automl-image-inference-v2",
     pipeline_root=pipeline_root_path)
-def pipeline(project_id: str):
+def pipeline(project_id: str, model_uri: str, annotation_bucket: str, embedding_bucket: str):
+    download_blob_op = (download_blob_step(
+      model_uri
+    ))
+    print(pipeline_root_path)
     
-    with kfp.dsl.ParallelFor(
-        ['gs://acbm_videos/videos/video_2019Y_04M_25D_12h_29m_13s_cam_6394837-0000.mp4', 'gs://acbm_videos/videos/video_2019Y_04M_25D_12h_29m_13s_cam_6394837-0000_tesing.mp4']
-        ) as video:
-        check_embeddings_op = check_embeddings_component(video)
-        check_embeddings_op.execution_options.caching_strategy.max_cache_staleness = "P0D"
-        with kfp.dsl.Condition(check_embeddings_op.output != 'Exists'):
-            preprocess_op = (preprocess_component(
-                video_uri = video,
-                model_uri= 'models/',
-            ).add_node_selector_constraint(
-                'cloud.google.com/gke-accelerator', 'nvidia-tesla-p100'
-            ).set_gpu_limit(1))
-            upload_op = upload_component(video, preprocess_op.output)
+    train_step = create_step_train(
+        model_uri=download_blob_op.output,
+        annotation_bucket=annotation_bucket,
+        embedding_bucket=embedding_bucket,
+        save_bucket=pipeline_root_path,
+    ).add_node_selector_constraint(
+        'cloud.google.com/gke-accelerator', 'nvidia-tesla-p100'
+    ).set_gpu_limit(1)
 
-    print_op = print_component()
-    print_op.after(upload_op)
+    model_upload_op = gcc_aip.ModelUploadOp(
+      project=project_id,
+      display_name='lstm_trained_model_docker3',
+      serving_container_predict_route='/prediction',
+      serving_container_health_route='/health',
+      serving_container_image_uri='gcr.io/acbm-317517/artemisgcp_training:latest',
+      serving_container_environment_variables={"MODEL_PATH": "{}".format(pipeline_root_path)},
+  )
+    model_upload_op.after(train_step)
+
+    endpoint_create_op = gcc_aip.EndpointCreateOp(
+        project=project_id,
+        display_name="lstm_treained_model_endpoint3",
+    )
+
+    model_deploy_op = gcc_aip.ModelDeployOp( 
+        project=project_id,
+        endpoint=endpoint_create_op.outputs["endpoint"],
+        model=model_upload_op.outputs["model"],
+        deployed_model_display_name="lstm_trained_model_deploy3",
+        machine_type="n1-standard-4",
+    )
+    
+# def pipeline(project_id: str):
+    
+#     with kfp.dsl.ParallelFor(
+#         ['gs://acbm_videos/videos/video_2019Y_04M_25D_12h_29m_13s_cam_6394837-0000.mp4', 'gs://acbm_videos/videos/video_2019Y_04M_25D_12h_29m_13s_cam_6394837-0000_tesing.mp4']
+#         ) as video:
+#         check_embeddings_op = check_embeddings_component(video)
+#         check_embeddings_op.execution_options.caching_strategy.max_cache_staleness = "P0D"
+#         with kfp.dsl.Condition(check_embeddings_op.output != 'Exists'):
+#             preprocess_op = (preprocess_component(
+#                 video_uri = video,
+#                 model_uri= 'models/',
+#             ).add_node_selector_constraint(
+#                 'cloud.google.com/gke-accelerator', 'nvidia-tesla-p100'
+#             ).set_gpu_limit(1))
+#             upload_op = upload_component(video, preprocess_op.output)
+
+#     print_op = print_component()
+#     print_op.after(upload_op)
     
 
     # check_embeddings_op = check_embeddings_component(
@@ -147,11 +235,26 @@ def pipeline(project_id: str):
     #     ).add_node_selector_constraint(
     #         'cloud.google.com/gke-accelerator', 'nvidia-tesla-p100'
     #     ).set_gpu_limit(1))
-
+    
 
 compiler.Compiler().compile(pipeline_func=pipeline,
         package_path='training_pipeline.json')
 
+# api_client = AIPlatformClient(project_id=project_id, region=region)
+
+# response = api_client.create_run_from_job_spec(
+#     'training_pipeline.json',
+#     pipeline_root=pipeline_root_path,
+#     parameter_values={
+#         'project_id': project_id,
+#         'model_uri': 'gs://acbm_videos/model0.9573332767722087.pth',
+#         'annotation_bucket': 'acbm_videos',
+#         'embedding_bucket': 'acbm_videos'
+#     })
+
+
+
+#add blob downloader for training process for now. then talk to people about how to separate and pass through
 # with open("training_pipeline.yaml", 'r') as yaml_in, open("training_pipeline.json", "w") as json_out:
 #     yaml_object = yaml.safe_load(yaml_in) # yaml_object will be a list or a dict
 #     json.dump(yaml_object, json_out)
