@@ -25,7 +25,7 @@ services:
     endpoint:
       image: gcr.io/${PROJECT_ID}/endpoint:latest
       build:
-        context: .
+        context: ./endpoint
         dockerfile: ./endpoint/Dockerfile
       volumes:
         - ./endpoint/:/app/
