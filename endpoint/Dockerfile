@@ -26,4 +26,4 @@ ENV pipeline_root_path 'gs://vertex-ai-sdk-pipelines'
 RUN pip install -r /app/requirements.txt
 RUN python inference_pipeline.py
 
-CMD ["gunicorn", "app:app", "--config=config.py"]
+#CMD ["gunicorn", "app:app", "--config=config.py"]
