@@ -27,6 +27,8 @@ jobs:
         # Ignore the failure of a step and avoid terminating the job.
         continue-on-error: true
       - name: Build and Push Image
+        env:
+          PROJECT_ID: ${{ secrets.PROJECT_ID }}
         run: |
           docker-compose up --build
           docker-compose push
