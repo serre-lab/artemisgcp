@@ -51,7 +51,6 @@ def download_model(source_blob_model: str, model_file: OutputPath()):
     model_accuracy = None
 
     model_exists = False
-
     for model in client.list_blobs(source_blob_model, prefix='trained_models'):
         res = re.findall("\d+\.\d+", model.name)
         model_exists = True
@@ -70,9 +69,11 @@ def download_model(source_blob_model: str, model_file: OutputPath()):
     if model_exists == True:     
         model_bucket = client.bucket(source_blob_model)
         modelBlob = model_bucket.blob(model_name)
+        print('model found')
         modelBlob.download_to_filename(model_file)
     else:
         model_file="models/"
+        print("no model")
     
 
 def print_hello():
@@ -286,7 +287,7 @@ response = api_client.create_run_from_job_spec(
     enable_caching = False,
     parameter_values={
         'project_id': project_id,
-        'model_uri': 'gs://acbm_videos/model0.9573332767722087.pth',
+        'model_uri': 'test_pipeline_1',
         'bucket_name': 'test_pipeline_1',
     })
 
