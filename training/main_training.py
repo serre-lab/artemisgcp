@@ -12,7 +12,7 @@ from baseline import StackedLSTM, MLP, StackedLSTMOne, BiStackedLSTMOne
 from utils import bal_acc, class_report, plot_confusion_matrix, slackify
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
-#from download_blobs import downloadData
+from download_blobs import downloadData
 from upload_blob import upload_blob
 from dataset_load_torch import MouseDataset
 import pickle
@@ -41,7 +41,7 @@ parsedSave= urlparse(args.save)
 if args.model == 'models/':
    model_accuracy = None
    model_exists = False
-   for file in glob.glob('../LSTM/models/*.pth'):
+   for file in glob.glob('models/*.pth'):
       res = re.findall("\d+\.\d+", file)
       model_exists = True
 
@@ -61,7 +61,7 @@ else:
    
 
 #download blobs to container based on argument
-#downloadData(annotation_bucket_name=args.annotation, embedding_bucket_name=args.emb)
+downloadData(annotation_bucket_name=args.annotation, embedding_bucket_name=args.emb)
 
 #f = open('annotations/Trap2_FC-A-1-12-Postfear_new_video_2019Y_02M_23D_05h_30m_06s_cam_6394846-0000.mp4_training_annotations.json')
 

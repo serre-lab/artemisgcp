@@ -23,7 +23,7 @@ inputs:
 
 implementation:
   container:
-    image: gcr.io/acbm-317517/artemisgcp_training:latest
+    image: gcr.io/acbm-317517/training:latest
     # command is a list of strings (command-line arguments). 
     # The YAML language has two syntaxes for lists and you can use either of them. 
     # Here we use the "flow syntax" - comma-separated strings inside square brackets.
