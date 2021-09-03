@@ -48,10 +48,32 @@ def download_model(source_blob_model: str, model_file: OutputPath()):
     from urllib.parse import urlparse
  
     client = storage.Client()
-    model_url = urlparse(source_blob_model)
-    model_bucket = client.bucket(model_url.netloc)
-    modelBlob = model_bucket.blob(model_url.path.replace('/',''))
-    modelBlob.download_to_filename(model_file)
+    model_accuracy = None
+
+    model_exists = False
+
+    for model in client.list_blobs(source_blob_model, prefix='trained_models'):
+        res = re.findall("\d+\.\d+", model.name)
+        model_exists = True
+        
+        if model_accuracy == None:
+            model_accuracy= float(res[0])
+            model_name = model.name
+        
+        else:
+            if model_accuracy > float(res[0]):
+                continue
+            else:
+                model_accuracy = float(res[0])
+                model_name = model.name
+
+    if model_exists == True:     
+        model_bucket = client.bucket(source_blob_model)
+        modelBlob = model_bucket.blob(model_name)
+        modelBlob.download_to_filename(model_file)
+    else:
+        model_file="models/"
+    
 
 def print_hello():
     print('Hello')
@@ -181,15 +203,17 @@ def pipeline(project_id: str, model_uri: str, bucket_name: str):
             ).set_gpu_limit(1))
             upload_op = upload_component(video, preprocess_op.output)
     
+   
     download_blob_op = (download_blob_step(
       model_uri
     ))
+
     
     train_step = create_step_train(
         model_uri=download_blob_op.output,
         annotation_bucket=bucket_name,
         embedding_bucket=bucket_name,
-        save_bucket=pipeline_root_path,
+        save_bucket=bucket_name,
     ).add_node_selector_constraint(
         'cloud.google.com/gke-accelerator', 'nvidia-tesla-p100'
     ).set_gpu_limit(1)
@@ -210,7 +234,7 @@ def pipeline(project_id: str, model_uri: str, bucket_name: str):
         project=project_id,
         display_name="lstm_trained_model_endpoint_nocache",
     )
-
+    #To do: update nedpoint to start inference pipeline.
     model_deploy_op = gcc_aip.ModelDeployOp( 
         project=project_id,
         endpoint=endpoint_create_op.outputs["endpoint"],

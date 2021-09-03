@@ -5,12 +5,14 @@ import torch.nn.functional as F
 import torch.optim as optim
 import matplotlib.pyplot as plt
 import numpy as np
+import glob
+import re
 from sklearn.metrics import accuracy_score
 from baseline import StackedLSTM, MLP, StackedLSTMOne, BiStackedLSTMOne
 from utils import bal_acc, class_report, plot_confusion_matrix, slackify
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
-from download_blobs import downloadData
+#from download_blobs import downloadData
 from upload_blob import upload_blob
 from dataset_load_torch import MouseDataset
 import pickle
@@ -36,9 +38,30 @@ parser.add_argument('-s', '--save', help='Path to annotation URI foler', require
 args = parser.parse_args()
 parsedSave= urlparse(args.save)
 
+if args.model == 'models/':
+   model_accuracy = None
+   model_exists = False
+   for file in glob.glob('../LSTM/models/*.pth'):
+      res = re.findall("\d+\.\d+", file)
+      model_exists = True
+
+      if model_accuracy == None:
+            model_accuracy= float(res[0])
+            model_name = file
+      
+      else:
+            if model_accuracy > float(res[0]):
+                continue
+            else:
+                model_accuracy = float(res[0])
+                model_name = file
+   model_path = file
+else:
+   model_path = args.model
+   
 
 #download blobs to container based on argument
-downloadData(annotation_bucket_name=args.annotation, embedding_bucket_name=args.emb)
+#downloadData(annotation_bucket_name=args.annotation, embedding_bucket_name=args.emb)
 
 #f = open('annotations/Trap2_FC-A-1-12-Postfear_new_video_2019Y_02M_23D_05h_30m_06s_cam_6394846-0000.mp4_training_annotations.json')
 
@@ -51,7 +74,6 @@ data = MouseDataset('annotations/', 'embeddings/') #object that allows us to get
 validation_split = .2
 shuffle_dataset = True
 random_seed= 42
-
 
 
 # Creating data indices for training and validation splits:
@@ -84,7 +106,7 @@ if __name__ == '__main__':
     model = model.cuda()
     
     ##LOAD MODEL HERE
-    model.load_state_dict(torch.load(args.model))
+    model.load_state_dict(torch.load(model_path))
     
     optimizer = optim.Adam(model.parameters(), lr= 1e-4) #1e-7
 
@@ -159,8 +181,9 @@ if __name__ == '__main__':
              model.train()
              if b_acc==max(baccs) and b_acc>0.7:
                 model_name = 'model_acc_{}'.format(b_acc)
+                model_path = 'trained_models/' + model_name
                 torch.save(model.state_dict(), model_name)
-                upload_blob(parsedSave.netloc, model_name, model_name)
+                upload_blob(args.save, model_name, model_name)
                 print("model saved")
      
 
