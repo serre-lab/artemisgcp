@@ -38,7 +38,7 @@ parser.add_argument('-s', '--save', help='Path to annotation URI foler', require
 args = parser.parse_args()
 parsedSave= urlparse(args.save)
 
-if args.model == 'models/':
+if os.path.isfile(args.model) == False:
    model_accuracy = None
    model_exists = False
    for file in glob.glob('models/*.pth'):

@@ -46,6 +46,7 @@ def download_model(source_blob_model: str, model_file: OutputPath()):
     subprocess.run(["pip", "install", "google-cloud-storage"])
     from google.cloud import storage
     from urllib.parse import urlparse
+    import re
  
     client = storage.Client()
     model_accuracy = None
@@ -66,14 +67,17 @@ def download_model(source_blob_model: str, model_file: OutputPath()):
                 model_accuracy = float(res[0])
                 model_name = model.name
 
+    print('ran through model')
+    print(model_exists)
     if model_exists == True:     
         model_bucket = client.bucket(source_blob_model)
         modelBlob = model_bucket.blob(model_name)
         print('model found')
         modelBlob.download_to_filename(model_file)
-    else:
-        model_file="models/"
-        print("no model")
+    if model_exists == False:
+        print("no model downloading one")
+        model_file = "models/"
+       
     
 
 def print_hello():
