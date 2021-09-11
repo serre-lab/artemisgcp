@@ -30,10 +30,15 @@ jobs:
         env:
           PROJECT_ID: ${{ secrets.PROJECT_ID }}
         run: |
-          docker-compose build
-          docker-compose push
+          
+          cd endpoint
+          docker build -t endpoint . 
+          docker tag endpoint:latest gcr.io/${{ secrets.PROJECT_ID }}/endpoint:latest
+          docker push gcr.io/${{ secrets.PROJECT_ID }}/endpoint:latest
 
-      
+
+#docker-compose build
+#docker-compose push
 
 # cd endpoint
 # docker build --tag gcp-app .
