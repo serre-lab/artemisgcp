@@ -16,8 +16,7 @@ app = Flask(__name__)
 
 @app.route('/prediction', methods=['POST','GET'])
 def prediction():
-    
-    return {"predictions": "hello"}
+    return {"predictions": 'help'}
 
 @app.route('/health', methods=['POST','GET'])
 def healthcheck():
@@ -28,16 +27,3 @@ if __name__ == '__main__':
     # This is used when running locally. Gunicorn is used to run the
     # application on Google App Engine. See entrypoint in app.yaml.
     app.run(host="0.0.0.0", port=config.PORT, debug=config.DEBUG_MODE)
-
-
-
-"""
-{
-"instances" : [
-{
- "help": "help"
-}
-  ]
-
-}
-"""
