@@ -11,11 +11,11 @@ from kfp.v2.google.client import AIPlatformClient
 
 
 app = Flask(__name__)
-api_client = AIPlatformClient(project_id='acbm-317517', region='us-central1')
 
 
 @app.route('/prediction', methods=['POST','GET'])
 def prediction():
+    api_client = AIPlatformClient(project_id='acbm-317517', region='us-central1')
 
     response = api_client.create_run_from_job_spec(
     'inference_pipeline.json',
