@@ -22,11 +22,11 @@ services:
         dockerfile: ./training/Dockerfile
         #cache_from: 
         #  - gcr.io/acbm-317517/artemisgcp_training:latest
-    #endpoint:
-      #image: gcr.io/${PROJECT_ID}/endpoint:latest
-      #build:
-       # context: ./endpoint
-       # dockerfile: Dockerfile
+    endpoint:
+      image: gcr.io/${PROJECT_ID}/endpoint:latest
+      build:
+       context: ./endpoint
+       dockerfile: Dockerfile
       #volumes:
      #   - ./endpoint/:/app/
       # command: gunicorn app:app --config=/app/config.py
