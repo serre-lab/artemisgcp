@@ -246,6 +246,7 @@ def pipeline(project_id: str, model_uri: str, bucket_name: str):
         model=model_upload_op.outputs["model"],
         deployed_model_display_name="lstm_trained_model_deploy_nocache2",
         machine_type="n1-standard-4",
+        service_account="Vertex-pipelines"
     )
     
 # def pipeline(project_id: str):
