@@ -77,11 +77,6 @@ def download_model(source_blob_model: str, model_file: OutputPath()):
     if model_exists == False:
         print("no model downloading one")
         model_file = "models/"
-       
-    
-
-def print_hello():
-    print('Hello')
 
 def check_embeddings_exist(video_file: str) -> str:
     ''' Returns exists if a video_files embeddings exists'''
@@ -246,7 +241,7 @@ def pipeline(project_id: str, model_uri: str, bucket_name: str):
         model=model_upload_op.outputs["model"],
         deployed_model_display_name="lstm_trained_model_deploy_nocache2",
         machine_type="n1-standard-4",
-        service_account="Vertex-pipelines"
+        service_account="vertex-ai-pipeline@acbm-317517.iam.gserviceaccount.com"
     )
     
 # def pipeline(project_id: str):
@@ -290,6 +285,7 @@ response = api_client.create_run_from_job_spec(
     'training_pipeline.json',
     pipeline_root=pipeline_root_path,
     enable_caching = False,
+    service_account = 'vertex-ai-pipeline@acbm-317517.iam.gserviceaccount.com',
     parameter_values={
         'project_id': project_id,
         'model_uri': 'test_pipeline_1',
