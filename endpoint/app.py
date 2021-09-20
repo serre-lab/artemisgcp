@@ -13,7 +13,6 @@ from kfp.v2.google.client import AIPlatformClient
 app = Flask(__name__)
 
 
-
 @app.route('/prediction', methods=['POST','GET'])
 def prediction():
     api_client = AIPlatformClient(project_id='acbm-317517', region='us-central1')
@@ -22,9 +21,10 @@ def prediction():
     'inference_pipeline.json',
     pipeline_root='gs://vertex-ai-sdk-pipelines',
     enable_caching = False,
+    service_account = 'vertex-ai-pipeline@acbm-317517.iam.gserviceaccount.com',
     parameter_values={
         'project_id': 'acbm-317517',
-        'video_file': 'gs://test_pipeline_1/video_2019Y_04M_25D_12h_29m_13s_cam_6394837-0000.mp4',
+        'video_file': 'gs://acbm_videos/videos/video_2019Y_04M_25D_12h_29m_13s_cam_6394837-0000_tesing.mp4',
     })
 
 

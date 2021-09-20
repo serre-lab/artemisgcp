@@ -2,11 +2,12 @@ import kfp
 from kfp.v2 import compiler
 from google.cloud import aiplatform
 import kfp.components as comp
+from kfp.v2.google.client import AIPlatformClient
 # from kfp.dsl import Output
 import os
 
 project_id = 'acbm-317517'
-region = 'US-CENTRAL1'
+region = 'us-central1'
 pipeline_root_path = 'gs://vertex-ai-sdk-pipelines'
 
 preprocess_component = comp.load_component_from_text("""
@@ -83,3 +84,14 @@ def pipeline(project_id: str, video_file: str):
 
 compiler.Compiler().compile(pipeline_func=pipeline,
         package_path='inference_pipeline.json')
+
+# api_client = AIPlatformClient(project_id=project_id, region=region)
+
+# response = api_client.create_run_from_job_spec(
+#     'inference_pipeline.json',
+#     pipeline_root=pipeline_root_path,
+#     enable_caching = False,
+#     parameter_values={
+#         'project_id': project_id,
+#         'video_file': 'gs://acbm_videos/videos/video_2019Y_04M_25D_12h_29m_13s_cam_6394837-0000_tesing.mp4',
+#     })
