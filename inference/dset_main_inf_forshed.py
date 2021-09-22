@@ -15,6 +15,7 @@ from pathlib import Path
 parser = argparse.ArgumentParser()
 parser.add_argument("--embname", type=str, required=True)
 parser.add_argument("--output_file_name", type=str, required=True)
+parser.add_argument("--model_uri", type= str, required=True)
 #parser.add_argument("--gpu", type=str, required=True)
 args = parser.parse_args()
 
