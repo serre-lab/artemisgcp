@@ -17,7 +17,7 @@ RUN cd artemisgcp && \
     git lfs pull -I i3d/models
 
 ### MAIN CONTAINER
-FROM nvcr.io/nvidia/tensorflow:21.08-tf1-py3
+FROM tensorflow/tensorflow:1.15.5-gpu-py3
 
 RUN apt update && \
     apt-get install ffmpeg libsm6 libxext6  -y
