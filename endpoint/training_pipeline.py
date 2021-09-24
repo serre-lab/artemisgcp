@@ -145,10 +145,6 @@ upload_component = comp.create_component_from_func(
     base_image = 'gcr.io/acbm-317517/utils:latest'
 )
 
-print_component = comp.create_component_from_func(
-    print_hello,
-)
-
 download_blob_step = comp.create_component_from_func(
   download_model,
   base_image='gcr.io/google.com/cloudsdktool/cloud-sdk:latest',
