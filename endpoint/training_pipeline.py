@@ -20,7 +20,6 @@ inputs:
 - {name: annotation_bucket, type: String, description: 'Path to Annotations to use for training'}
 - {name: embedding_bucket, type: String, description: 'Path to Embeddings to use for training'}
 - {name: save_bucket, type: String, description: 'Path to trained model to use for training'}
-
 implementation:
   container:
     image: gcr.io/acbm-317517/training:latest
@@ -47,7 +46,6 @@ def download_model(source_blob_model: str, model_file: OutputPath()):
     from google.cloud import storage
     from urllib.parse import urlparse
     import re
- 
     client = storage.Client()
     model_accuracy = None
 
@@ -145,9 +143,7 @@ upload_component = comp.create_component_from_func(
     base_image = 'gcr.io/acbm-317517/utils:latest'
 )
 
-print_component = comp.create_component_from_func(
-    print_hello,
-)
+
 
 download_blob_step = comp.create_component_from_func(
   download_model,
@@ -157,14 +153,11 @@ download_blob_step = comp.create_component_from_func(
 preprocess_component = comp.load_component_from_text("""
 name: Get embeddings
 description: Run the i3d model to get embeddings
-
 inputs:
 - {name: video_uri, type: String, description: 'URI of the video file (GCP bucket)'}
 - {name: model_uri, type: String, description: 'URI to Annotations to use for training'}
-
 outputs:
 - {name: pickled_output, type: Artifact, description: 'URI to Saved model to use for predictions'}
-
 implementation:
   container:
     image: gcr.io/acbm-317517/i3d-preprocess:latest
