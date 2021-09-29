@@ -23,19 +23,20 @@ def download_model(source_blob_model: str, model_file: OutputPath()):
 
     model_exists = False
     for model in client.list_blobs(source_blob_model, prefix='trained_models'):
-        res = re.findall("\d+\.\d+", model.name)
-        model_exists = True
-        
-        if model_accuracy == None:
-            model_accuracy= float(res[0])
-            model_name = model.name
-        
-        else:
-            if model_accuracy > float(res[0]):
-                continue
-            else:
-                model_accuracy = float(res[0])
+        if model.name.endswith(".pth"):
+            res = re.findall("\d+\.\d+", model.name)
+            model_exists = True
+            
+            if model_accuracy == None:
+                model_accuracy= float(res[0])
                 model_name = model.name
+            
+            else:
+                if model_accuracy > float(res[0]):
+                    continue
+                else:
+                    model_accuracy = float(res[0])
+                    model_name = model.name
 
     print('ran through model')
     print(model_exists)

@@ -52,27 +52,29 @@ def download_model(source_blob_model: str, model_file: OutputPath()):
     model_accuracy = None
 
     model_exists = False
-    for model in client.list_blobs(source_blob_model, prefix='trained_models'):
-        res = re.findall("\d+\.\d+", model.name)
-        model_exists = True
-        
-        if model_accuracy == None:
-            model_accuracy= float(res[0])
-            model_name = model.name
-        
-        else:
-            if model_accuracy > float(res[0]):
-                continue
-            else:
-                model_accuracy = float(res[0])
+    for model in client.list_blobs(source_blob_model, prefix='trained_models/'):
+        if model.name.endswith(".pth"):
+            print(model.name)
+            res = re.findall("\d+\.\d+", model.name)
+            model_exists = True
+            
+            if model_accuracy == None:
+                model_accuracy= float(res[0])
                 model_name = model.name
+            
+            else:
+                if model_accuracy > float(res[0]):
+                    continue
+                else:
+                    model_accuracy = float(res[0])
+                    model_name = model.name
 
     print('ran through model')
     print(model_exists)
     if model_exists == True:     
         model_bucket = client.bucket(source_blob_model)
         modelBlob = model_bucket.blob(model_name)
-        print('model found')
+        print('model found: using model found in ' + source_blob_model + '/' + model_name)
         modelBlob.download_to_filename(model_file)
     if model_exists == False:
         print("no model downloading one")
@@ -186,7 +188,7 @@ implementation:
 def pipeline(project_id: str, model_uri: str, bucket_name: str):
     
     with kfp.dsl.ParallelFor([
-        'gs://test_pipeline_1/video_2019Y_04M_25D_12h_29m_13s_cam_6394837-0000.mp4'
+        'gs://test_pipeline_2/Copy of video_2019Y_04M_25D_12h_29m_13s_cam_6394837-0000.mp4'
         ]) as video:
         check_embeddings_op = check_embeddings_component(video)
         check_embeddings_op.execution_options.caching_strategy.max_cache_staleness = "P0D"
@@ -284,8 +286,8 @@ response = api_client.create_run_from_job_spec(
     service_account = 'vertex-ai-pipeline@acbm-317517.iam.gserviceaccount.com',
     parameter_values={
         'project_id': project_id,
-        'model_uri': 'test_pipeline_1',
-        'bucket_name': 'test_pipeline_1',
+        'model_uri': 'test_pipeline_2',
+        'bucket_name': 'test_pipeline_2',
     })
 
 
