@@ -42,7 +42,7 @@ def download_model(source_blob_model: str, model_file: OutputPath()):
     if model_exists == True:     
         model_bucket = client.bucket(source_blob_model)
         modelBlob = model_bucket.blob(model_name)
-        print('model found')
+        print('model found: using model found in ' + source_blob_model + '/' + model_name)
         modelBlob.download_to_filename(model_file)
     if model_exists == False:
         print("no model downloading one")
@@ -136,14 +136,15 @@ def pipeline(project_id: str, video_file: str, model_uri: str):
 compiler.Compiler().compile(pipeline_func=pipeline,
         package_path='inference_pipeline.json')
 
-api_client = AIPlatformClient(project_id=project_id, region=region)
+# api_client = AIPlatformClient(project_id=project_id, region=region)
 
-response = api_client.create_run_from_job_spec(
-    'inference_pipeline.json',
-    pipeline_root=pipeline_root_path,
-    enable_caching = False,
-    parameter_values={
-        'project_id': project_id,
-        'video_file': 'gs://acbm_videos/videos/video_2019Y_04M_25D_12h_29m_13s_cam_6394837-0000_tesing.mp4',
-        'model_uri': 'test_pipeline_1'
-    })
+# response = api_client.create_run_from_job_spec(
+#     'inference_pipeline.json',
+#     pipeline_root=pipeline_root_path,
+#     enable_caching = False,
+#     service_account = 'vertex-ai-pipeline@acbm-317517.iam.gserviceaccount.com',
+#     parameter_values={
+#         'project_id': project_id,
+#         'video_file': 'gs://acbm_videos/videos/video_2019Y_04M_25D_12h_29m_13s_cam_6394837-0000_tesing.mp4',
+#         'model_uri': 'acbm_videos'
+#     })
