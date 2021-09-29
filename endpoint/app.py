@@ -30,7 +30,7 @@ def prediction():
             service_account = 'vertex-ai-pipeline@acbm-317517.iam.gserviceaccount.com',
             parameter_values={
                 'project_id': 'acbm-317517',
-                'video_file': 'gs://acbm_videos/videos/video_2019Y_04M_25D_12h_29m_13s_cam_6394837-0000_tesing.mp4',
+                'video_file': data[0][key],
                 'model_uri': 'acbm_videos'
             })
     
