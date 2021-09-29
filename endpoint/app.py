@@ -31,7 +31,7 @@ def prediction():
             parameter_values={
                 'project_id': 'acbm-317517',
                 'video_file': data[0][key],
-                'model_uri': 'acbm_videos'
+                'model_uri': 'test_pipeline_2'
             })
     
 
