@@ -25,14 +25,14 @@ def downloadData(annotation_bucket_name='', embedding_bucket_name=''):
     subprocess.run(["mkdir", "embeddings"])
     
     for annotation in annotation_list_blobs:
-        if ".json" in annotation.name:
+        if annotation.name.endswith(".json"):
             destination_uri = '{}/{}'.format('annotations', annotation.name) 
             annotation.download_to_filename(destination_uri)
             
 
     
     for emb in embedding_list_blobs:
-        if ".p" in emb.name:
+        if emb.name.endswith(".p") :
             destination_uri = '{}/{}'.format('embeddings', emb.name) 
             emb.download_to_filename(destination_uri)
 

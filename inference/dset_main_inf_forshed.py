@@ -15,6 +15,7 @@ from pathlib import Path
 parser = argparse.ArgumentParser()
 parser.add_argument("--embname", type=str, required=True)
 parser.add_argument("--output_file_name", type=str, required=True)
+parser.add_argument("--model_uri", type= str, required=True)
 #parser.add_argument("--gpu", type=str, required=True)
 args = parser.parse_args()
 
@@ -62,9 +63,10 @@ if __name__ == '__main__':
     #print('batch size-', bsize)
     #print('num workers dataloader-', num_work_dataload)
     
+    model_path = args.model_uri
     model = BiStackedLSTMOne(input_size=1024, hidden_sizes=[256], num_classes=9, num_steps=16)
     model = model.cuda()
-    model.load_state_dict(torch.load('/workspace/inference/models/model0.9573332767722087.pth'))
+    model.load_state_dict(torch.load(model_path))
     model.eval()
 
     # emb_base_dir = '/cifs/data/tserre_lrs/projects/prj_nih/prj_andrew_holmes/inference/inference_i3d/'
