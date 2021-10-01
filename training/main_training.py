@@ -180,7 +180,7 @@ if __name__ == '__main__':
              loss_100 = []
              model.train()
              if b_acc==max(baccs) and b_acc>0.7:
-                model_name = 'model_acc_{}'.format(b_acc)
+                model_name = 'model_acc_{}.pth'.format(b_acc)
                 model_path = 'trained_models/' + model_name
                 torch.save(model.state_dict(), model_name)
                 upload_blob(args.save, model_name, model_path)
