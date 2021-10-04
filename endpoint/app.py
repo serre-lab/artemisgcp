@@ -18,6 +18,9 @@ def prediction():
     api_client = AIPlatformClient(project_id='acbm-317517', region='us-central1')
 
     data = request.json["instances"]
+    bucket_name = request.json["bucket"]
+    service_account = request.json["service account"]
+    project_id = request.json["project id"]
 
     
 
@@ -27,11 +30,11 @@ def prediction():
             'inference_pipeline.json',
             pipeline_root='gs://vertex-ai-sdk-pipelines',
             enable_caching = False,
-            service_account = 'vertex-ai-pipeline@acbm-317517.iam.gserviceaccount.com',
+            service_account = service_account,
             parameter_values={
-                'project_id': 'acbm-317517',
+                'project_id': project_id,
                 'video_file': data[0][key],
-                'model_uri': 'test_pipeline_2'
+                'model_uri': bucket_name
             })
     
 
