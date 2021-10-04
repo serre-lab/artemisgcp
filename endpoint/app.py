@@ -18,9 +18,10 @@ def prediction():
     api_client = AIPlatformClient(project_id='acbm-317517', region='us-central1')
 
     data = request.json["instances"]
-    bucket_name = request.json["bucket"]
-    service_account = request.json["service account"]
-    project_id = request.json["project id"]
+    parameters = request.json["parameters"]
+    bucket_name = parameters["bucket"]
+    service_account = parameters["service account"]
+    project_id = parameters["project id"]
 
     
 
