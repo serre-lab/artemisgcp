@@ -10,7 +10,7 @@ def get_best_model(raw_txt):
     models = document['models']
 
     accuracy = 0
-    best_model = ''
+    best_model = {}
     for version in models:
         if (version['accurary'] > accuracy):
             accuracy = version['accuracy']
