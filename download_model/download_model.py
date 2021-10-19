@@ -12,11 +12,11 @@ def get_best_model(raw_txt):
     accuracy = 0
     best_model = ''
     for version in models:
-        if (models[version]['accurary'] > accuracy):
-            accuracy = models[version]['accuracy']
+        if (version['accurary'] > accuracy):
+            accuracy = version['accuracy']
             best_model = version
 
-    return models[best_model]['path']
+    return best_model['path']
 
 def download_best_model(bucket_name: str, model_file: str):
 
