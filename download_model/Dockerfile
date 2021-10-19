@@ -28,6 +28,7 @@ COPY ["./download_model/download_model.py", "./"]
 # Copy git lfs files
 COPY --from=lfs_runner ["./artemisgcp/LSTM/models/base_model.pth", "./artemisgcp/LSTM/models/models.yaml", "./models/"]
 
-RUN pip install google-cloud-storage
+RUN pip install google-cloud-storage && \
+    pip install pyyaml
 
 ENTRYPOINT ["bin/bash"]
