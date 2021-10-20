@@ -218,7 +218,7 @@ if __name__ == '__main__':
                dt = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
                version = 'LSTM_model_{}.pth'.format(dt)
                model_path = 'trained_models/' + version
-               document = download_yaml(args.annotations, source_blob_name = 'trained_models/models.yaml')
+               document = download_yaml(args.save, source_blob_name = 'trained_models/models.yaml')
                update_and_upload_yaml(document, version, b_acc, model_path)
                torch.save(model.state_dict(), version)
                upload_blob(args.save, version, model_path)
