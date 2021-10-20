@@ -183,7 +183,7 @@ if __name__ == '__main__':
                 model_name = 'model_acc_{}'.format(b_acc)
                 model_path = 'trained_models/' + model_name
                 torch.save(model.state_dict(), model_name)
-                upload_blob(args.save, model_name, model_name)
+                upload_blob(args.save, model_name, model_path)
                 print("model saved")
      
 

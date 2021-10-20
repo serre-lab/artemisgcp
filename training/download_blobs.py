@@ -15,9 +15,9 @@ def downloadData(annotation_bucket_name='', embedding_bucket_name=''):
     annotations_bucket = client.bucket(annotation_bucket_name)
     embeddings_bucket = client.bucket(embedding_bucket_name)
 
-    annotation_list_blobs = annotations_bucket.list_blobs()
+    annotation_list_blobs = annotations_bucket.list_blobs(prefix="annotations/")
 
-    embedding_list_blobs = embeddings_bucket.list_blobs()
+    embedding_list_blobs = embeddings_bucket.list_blobs(prefix="embeddings/")
 
 
     subprocess.run(["mkdir", "annotations"])
@@ -26,22 +26,15 @@ def downloadData(annotation_bucket_name='', embedding_bucket_name=''):
     
     for annotation in annotation_list_blobs:
         if ".json" in annotation.name:
-            destination_uri = '{}/{}'.format('annotations', annotation.name) 
-            annotation.download_to_filename(destination_uri)
+            annotation.download_to_filename(annotation.name)
             
 
     
     for emb in embedding_list_blobs:
         if ".p" in emb.name:
-            destination_uri = '{}/{}'.format('embeddings', emb.name) 
-            emb.download_to_filename(destination_uri)
+            emb.download_to_filename(emb.name)
 
     
-
-  
-
-
-
 
 
 
