@@ -49,11 +49,11 @@ def update_and_upload_yaml(raw_txt, version, accuracy, model_path):
    current_model = {'path': model_path, 'accuracy': accuracy}
    document[version] = current_model
 
-   with open('trained_models/updated_models.yaml', 'w') as f:
+   with open('updated_models.yaml', 'w') as f:
       dump = yaml.dumps(document)
       f.wrte(dump)
 
-   upload_blob(args.save, 'trained_models/updated_models.yaml', 'trained_models/models.yaml')
+   upload_blob(args.save, 'updated_models.yaml', 'trained_models/models.yaml')
 
 
 #Get video path argument
