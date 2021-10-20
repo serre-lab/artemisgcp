@@ -9,6 +9,7 @@ import glob
 import re
 from sklearn.metrics import accuracy_score
 from baseline import StackedLSTM, MLP, StackedLSTMOne, BiStackedLSTMOne
+from training.upload_blob import download_blob
 from utils import bal_acc, class_report, plot_confusion_matrix, slackify
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
@@ -21,11 +22,39 @@ import time
 import argparse
 import logging
 from urllib.parse import urlparse
+from datetime import datetime
 logging.basicConfig(level=logging.INFO)
 logging.info('The video main training code is running')
 
 
 plt.ioff()
+
+
+def download_yaml(bucket_name, source_blob_name) -> str:
+
+   client = storage.Client()
+
+   model_bucket = client.bucket(bucket_name)
+   yaml_blob = model_bucket.blob(source_blob_name)
+
+   document = yaml_blob.download_as_text()
+
+   return document
+
+def update_and_upload_yaml(raw_txt, version, accuracy, model_path):
+
+   import yaml
+
+   document = yaml.safe_load(raw_txt)
+
+   current_model = {'path': model_path, 'accuracy': accuracy}
+   document[version] = current_model
+
+   with open('trained_models/updated_models.yaml', 'w') as f:
+      dump = yaml.dumps(document)
+      f.wrte(dump)
+
+   upload_blob(args.save, 'trained_models/updated_models.yaml', 'trained_models/models.yaml')
 
 
 #Get video path argument
@@ -182,11 +211,22 @@ if __name__ == '__main__':
              loss_100 = []
              model.train()
              if b_acc==max(baccs) and b_acc>0.7:
-                model_name = 'model_acc_{}.pth'.format(b_acc)
-                model_path = 'trained_models/' + model_name
-                torch.save(model.state_dict(), model_name)
-                upload_blob(args.save, model_name, model_path)
-                print("model saved")
+               #  model_name = 'model_acc_{}.pth'.format(b_acc)
+               #  model_path = 'trained_models/' + model_name
+               #  torch.save(model.state_dict(), model_name)
+               #  upload_blob(args.save, model_name, model_path)
+               #  print("model saved")
+               dt = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+               version = 'LSTM_model_{}.pth'.format(dt)
+               model_path = 'trained_models/' + version
+               document = download_yaml(args.annotations, source_blob_name = 'trained_models/models.yaml')
+               update_and_upload_yaml(document, version, b_acc, model_path)
+               torch.save(model.state_dict(), version)
+               upload_blob(args.save, version, model_path)
+               print("model saved")
+               
+
+
      
 
    
