@@ -41,44 +41,65 @@ implementation:
       {inputValue: save_bucket},
     ]""")
 
-def download_model(source_blob_model: str, model_file: OutputPath()):
-    import subprocess
-    subprocess.run(["pip", "install", "google-cloud-storage"])
-    from google.cloud import storage
-    from urllib.parse import urlparse
-    import re
+download_model_component = comp.load_component_from_text("""
+name: Download Model
+description: Downloads the most accurate model
+inputs:
+- {name: model_bucket, type: String, description: 'Path to the bucket where models are stored'}
+
+outputs:
+- {name: best_model, type: Artifact, description: 'Best model from list of models in GCP bucket'}
+
+implementation:
+    container: 
+        image: 'gcr.io/acbm-317517/download_model:latest'
+        command: [
+            python,
+            download_model.py,
+            --bucket_name,
+            {inputValue: model_bucket},
+            --model_file,
+            {outputPath: best_model},
+        ]""")
+
+# def download_model(source_blob_model: str, model_file: OutputPath()):
+#     import subprocess
+#     subprocess.run(["pip", "install", "google-cloud-storage"])
+#     from google.cloud import storage
+#     from urllib.parse import urlparse
+#     import re
  
-    client = storage.Client()
-    model_accuracy = None
+#     client = storage.Client()
+#     model_accuracy = None
 
-    model_exists = False
-    for model in client.list_blobs(source_blob_model, prefix='trained_models/'):
-        if model.name.endswith(".pth"):
-            print(model.name)
-            res = re.findall("\d+\.\d+", model.name)
-            model_exists = True
+#     model_exists = False
+#     for model in client.list_blobs(source_blob_model, prefix='trained_models/'):
+#         if model.name.endswith(".pth"):
+#             print(model.name)
+#             res = re.findall("\d+\.\d+", model.name)
+#             model_exists = True
             
-            if model_accuracy == None:
-                model_accuracy= float(res[0])
-                model_name = model.name
+#             if model_accuracy == None:
+#                 model_accuracy= float(res[0])
+#                 model_name = model.name
             
-            else:
-                if model_accuracy > float(res[0]):
-                    continue
-                else:
-                    model_accuracy = float(res[0])
-                    model_name = model.name
+#             else:
+#                 if model_accuracy > float(res[0]):
+#                     continue
+#                 else:
+#                     model_accuracy = float(res[0])
+#                     model_name = model.name
 
-    print('ran through model')
-    print(model_exists)
-    if model_exists == True:     
-        model_bucket = client.bucket(source_blob_model)
-        modelBlob = model_bucket.blob(model_name)
-        print('model found: using model found in ' + source_blob_model + '/' + model_name)
-        modelBlob.download_to_filename(model_file)
-    if model_exists == False:
-        print("no model downloading one")
-        model_file = "models/"
+#     print('ran through model')
+#     print(model_exists)
+#     if model_exists == True:     
+#         model_bucket = client.bucket(source_blob_model)
+#         modelBlob = model_bucket.blob(model_name)
+#         print('model found: using model found in ' + source_blob_model + '/' + model_name)
+#         modelBlob.download_to_filename(model_file)
+#     if model_exists == False:
+#         print("no model downloading one")
+#         model_file = "models/"
 
 def check_embeddings_exist(video_file: str) -> str:
     ''' Returns exists if a video_files embeddings exists'''
@@ -147,10 +168,10 @@ upload_component = comp.create_component_from_func(
     base_image = 'gcr.io/acbm-317517/utils:latest'
 )
 
-download_blob_step = comp.create_component_from_func(
-  download_model,
-  base_image='gcr.io/google.com/cloudsdktool/cloud-sdk:latest',
-)
+# download_blob_step = comp.create_component_from_func(
+#   download_model,
+#   base_image='gcr.io/google.com/cloudsdktool/cloud-sdk:latest',
+# )
 
 preprocess_component = comp.load_component_from_text("""
 name: Get embeddings
@@ -202,8 +223,8 @@ def pipeline(project_id: str, model_uri: str, bucket_name: str):
             upload_op = upload_component(video, preprocess_op.output)
     
    
-    download_blob_op = (download_blob_step(
-      model_uri
+    download_blob_op = (download_model_component(
+      model_bucket=bucket_name
     ))
 
     
