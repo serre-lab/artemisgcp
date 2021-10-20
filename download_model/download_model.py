@@ -21,6 +21,8 @@ def get_best_model(raw_txt):
 def download_best_model(bucket_name: str, model_file: str):
 
     from google.cloud import storage
+    from pathlib import Path
+    import shutil
 
     client = storage.Client()
 
@@ -32,23 +34,26 @@ def download_best_model(bucket_name: str, model_file: str):
         model_path = get_best_model(document)
         model_blob = model_bucket.blob(model_path)
         print("Found the best model as {}".format(model_path))
-        model_file = 'best_model.pth'
+        Path(model_file).mkdir(parents= True, exist_ok=True)
         model_blob.download_to_filename(model_file)
     else:
         print("Could not find a yaml file, loading base model")
-        model_file = 'models/base_model.pth'
+        # model_file = 'models/base_model.pth'
         document = 'models/models.yaml'
         model_blob = model_bucket.blob('trained_models/base_model.pth')
         print("Uploading base model to the main bucket")
         yaml_blob.upload_from_filename(document)
-        model_blob.upload_from_filename(model_file)
+        model_blob.upload_from_filename('models/base_model.pth')
+        Path(model_file).mkdir(parents= True, exist_ok=True)
+        shutil.copyfile('models/base_model.pth', model_file)
+
 
 def parse_args():
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--bucket_name')
-    parser.add_argument('--model_file')
+    parser.add_argument('--bucket_name', type=str, required= True)
+    parser.add_argument('--model_file', type=str, required=True)
 
     return parser.parse_args()
 
