@@ -32,6 +32,7 @@ def download_best_model(bucket_name: str, model_file: str):
         model_path = get_best_model(document)
         model_blob = model_bucket.blob(model_path)
         print("Found the best model as {}".format(model_path))
+        model_file = 'models/best_model.pth'
         model_blob.download_to_filename(model_file)
     else:
         print("Could not find a yaml file, loading base model")
