@@ -38,26 +38,26 @@ parser.add_argument('-s', '--save', help='Path to annotation URI foler', require
 args = parser.parse_args()
 parsedSave= urlparse(args.save)
 
-if os.path.isfile(args.model) == False:
-   model_accuracy = None
-   model_exists = False
-   for file in glob.glob('models/*.pth'):
-      res = re.findall("\d+\.\d+", file)
-      model_exists = True
+# if os.path.isfile(args.model) == False:
+#    model_accuracy = None
+#    model_exists = False
+#    for file in glob.glob('models/*.pth'):
+#       res = re.findall("\d+\.\d+", file)
+#       model_exists = True
 
-      if model_accuracy == None:
-            model_accuracy= float(res[0])
-            model_name = file
+#       if model_accuracy == None:
+#             model_accuracy= float(res[0])
+#             model_name = file
       
-      else:
-            if model_accuracy > float(res[0]):
-                continue
-            else:
-                model_accuracy = float(res[0])
-                model_name = file
-   model_path = file
-else:
-   model_path = args.model
+#       else:
+#             if model_accuracy > float(res[0]):
+#                 continue
+#             else:
+#                 model_accuracy = float(res[0])
+#                 model_name = file
+#    model_path = file
+# else:
+#    model_path = args.model
    
 
 #download blobs to container based on argument
@@ -104,6 +104,8 @@ if __name__ == '__main__':
     #creates biLSTM model. 
     model = BiStackedLSTMOne(input_size=1024, hidden_sizes=[256], num_classes=9, num_steps = 16)
     model = model.cuda()
+
+    model_path = args.model
     
     ##LOAD MODEL HERE
     model.load_state_dict(torch.load(model_path))
