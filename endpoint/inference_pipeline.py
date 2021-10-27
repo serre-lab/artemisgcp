@@ -2,7 +2,7 @@ import kfp
 from kfp.v2 import compiler
 from google.cloud import aiplatform
 import kfp.components as comp
-from kfp.v2.google.client import AIPlatformClient
+#from kfp.v2.google.client import AIPlatformClient
 from kfp.components import OutputPath
 # from kfp.dsl import Output
 import os
