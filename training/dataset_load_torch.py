@@ -27,11 +27,11 @@ class MouseDataset(Dataset):
     self.BEHAVIOR_LABELS = {
             "drink": 0,
             "groom": 2,
-            "eating": 1,
+            "eat": 1,
             "hang": 3,
             "sniff": 4,
             "rear": 5,
-            "resting": 6,
+            "rest": 6,
             "walk": 7,
             "eathand": 8,
         }
