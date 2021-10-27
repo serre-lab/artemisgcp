@@ -21,11 +21,39 @@ import time
 import argparse
 import logging
 from urllib.parse import urlparse
+from datetime import datetime
 logging.basicConfig(level=logging.INFO)
 logging.info('The video main training code is running')
 
 
 plt.ioff()
+
+
+def download_yaml(bucket_name, source_blob_name) -> str:
+
+   client = storage.Client()
+
+   model_bucket = client.bucket(bucket_name)
+   yaml_blob = model_bucket.blob(source_blob_name)
+
+   document = yaml_blob.download_as_text()
+
+   return document
+
+def update_and_upload_yaml(raw_txt, version, accuracy, model_path):
+
+   import yaml
+
+   document = yaml.safe_load(raw_txt)
+
+   current_model = {'path': model_path, 'accuracy': accuracy}
+   document[version] = current_model
+
+   with open('updated_models.yaml', 'w') as f:
+      dump = yaml.dumps(document)
+      f.wrte(dump)
+
+   upload_blob(args.save, 'updated_models.yaml', 'trained_models/models.yaml')
 
 
 #Get video path argument
@@ -38,26 +66,26 @@ parser.add_argument('-s', '--save', help='Path to annotation URI foler', require
 args = parser.parse_args()
 parsedSave= urlparse(args.save)
 
-if os.path.isfile(args.model) == False:
-   model_accuracy = None
-   model_exists = False
-   for file in glob.glob('models/*.pth'):
-      res = re.findall("\d+\.\d+", file)
-      model_exists = True
+# if os.path.isfile(args.model) == False:
+#    model_accuracy = None
+#    model_exists = False
+#    for file in glob.glob('models/*.pth'):
+#       res = re.findall("\d+\.\d+", file)
+#       model_exists = True
 
-      if model_accuracy == None:
-            model_accuracy= float(res[0])
-            model_name = file
+#       if model_accuracy == None:
+#             model_accuracy= float(res[0])
+#             model_name = file
       
-      else:
-            if model_accuracy > float(res[0]):
-                continue
-            else:
-                model_accuracy = float(res[0])
-                model_name = file
-   model_path = file
-else:
-   model_path = args.model
+#       else:
+#             if model_accuracy > float(res[0]):
+#                 continue
+#             else:
+#                 model_accuracy = float(res[0])
+#                 model_name = file
+#    model_path = file
+# else:
+#    model_path = args.model
    
 
 #download blobs to container based on argument
@@ -104,6 +132,8 @@ if __name__ == '__main__':
     #creates biLSTM model. 
     model = BiStackedLSTMOne(input_size=1024, hidden_sizes=[256], num_classes=9, num_steps = 16)
     model = model.cuda()
+
+    model_path = args.model
     
     ##LOAD MODEL HERE
     model.load_state_dict(torch.load(model_path))
@@ -180,11 +210,22 @@ if __name__ == '__main__':
              loss_100 = []
              model.train()
              if b_acc==max(baccs) and b_acc>0.7:
-                model_name = 'model_acc_{}'.format(b_acc)
-                model_path = 'trained_models/' + model_name
-                torch.save(model.state_dict(), model_name)
-                upload_blob(args.save, model_name, model_name)
-                print("model saved")
+               #  model_name = 'model_acc_{}.pth'.format(b_acc)
+               #  model_path = 'trained_models/' + model_name
+               #  torch.save(model.state_dict(), model_name)
+               #  upload_blob(args.save, model_name, model_path)
+               #  print("model saved")
+               dt = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+               version = 'LSTM_model_{}.pth'.format(dt)
+               model_path = 'trained_models/' + version
+               document = download_yaml(args.save, source_blob_name = 'trained_models/models.yaml')
+               update_and_upload_yaml(document, version, b_acc, model_path)
+               torch.save(model.state_dict(), version)
+               upload_blob(args.save, version, model_path)
+               print("model saved")
+               
+
+
      
 
    

@@ -27,6 +27,11 @@ services:
       build:
        context: ./endpoint
        dockerfile: Dockerfile
+    download_model:
+      image: gcr.io/${PROJECT_ID}/download_model:latest
+      build:
+        context: .
+        dockerfile: ./download_model/Dockerfile
       #volumes:
      #   - ./endpoint/:/app/
       # command: gunicorn app:app --config=/app/config.py
