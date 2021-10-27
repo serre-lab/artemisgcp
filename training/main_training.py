@@ -30,6 +30,7 @@ plt.ioff()
 
 
 def download_yaml(bucket_name, source_blob_name) -> str:
+   from google.cloud import storage
 
    client = storage.Client()
 
@@ -46,12 +47,12 @@ def update_and_upload_yaml(raw_txt, version, accuracy, model_path):
 
    document = yaml.safe_load(raw_txt)
 
-   current_model = {'path': model_path, 'accuracy': accuracy}
+   current_model = {'path': model_path, 'accuracy': '{}'.format(accuracy)}
    document[version] = current_model
 
    with open('updated_models.yaml', 'w') as f:
-      dump = yaml.dumps(document)
-      f.wrte(dump)
+      dump = yaml.dump(document)
+      f.write(dump)
 
    upload_blob(args.save, 'updated_models.yaml', 'trained_models/models.yaml')
 
