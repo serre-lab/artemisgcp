@@ -4,9 +4,6 @@ from ast import literal_eval
 from urllib.parse import urlparse
 import subprocess
 
-from google.cloud import storage
-
-
 
 client = storage.Client()
 
