@@ -47,8 +47,8 @@ def update_and_upload_yaml(raw_txt, version, accuracy, model_path):
 
    document = yaml.safe_load(raw_txt)
 
-   current_model = {'path': model_path, 'accuracy': '{}'.format(accuracy)}
-   document[version] = current_model
+   current_model = {'path': model_path, 'accuracy': float('{}'.format(accuracy))}
+   document['models'][version] = current_model
 
    with open('updated_models.yaml', 'w') as f:
       dump = yaml.dump(document)
