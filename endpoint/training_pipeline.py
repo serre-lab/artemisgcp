@@ -105,6 +105,9 @@ def check_embeddings_exist(video_file: str) -> str:
     ''' Returns exists if a video_files embeddings exists'''
     from google.cloud import storage
 
+    if video_file == 'None':
+        return 'Exists'
+
     def parse_url(url: str):
         from urllib.parse import urlparse
         o = urlparse(url)
@@ -208,9 +211,7 @@ implementation:
     pipeline_root=pipeline_root_path)
 def pipeline(project_id: str, model_uri: str, bucket_name: str):
     
-    with kfp.dsl.ParallelFor([
-        'gs://test_pipeline_2/Copy of video_2019Y_04M_25D_12h_29m_13s_cam_6394837-0000.mp4'
-        ]) as video:
+    with kfp.dsl.ParallelFor(['None']) as video:
         check_embeddings_op = check_embeddings_component(video)
         check_embeddings_op.execution_options.caching_strategy.max_cache_staleness = "P0D"
         with kfp.dsl.Condition(check_embeddings_op.output != 'Exists'):
@@ -235,13 +236,13 @@ def pipeline(project_id: str, model_uri: str, bucket_name: str):
         save_bucket=bucket_name,
     ).add_node_selector_constraint(
         'cloud.google.com/gke-accelerator', 'nvidia-tesla-p100'
-    ).set_gpu_limit(1)
+    ).set_cpu_limit('4').set_memory_limit('32G').set_gpu_limit(1)
 
     train_step.after(upload_op)
 
     model_upload_op = gcc_aip.ModelUploadOp(
       project=project_id,
-      display_name='lstm_trained_model_docker4',
+      display_name='lstm_trained_model',
       serving_container_predict_route='/prediction',
       serving_container_health_route='/health',
       serving_container_image_uri='gcr.io/acbm-317517/endpoint:latest',
@@ -251,14 +252,14 @@ def pipeline(project_id: str, model_uri: str, bucket_name: str):
 
     endpoint_create_op = gcc_aip.EndpointCreateOp(
         project=project_id,
-        display_name="lstm_trained_model_endpoint_nocache",
+        display_name="trained_model_endpoint",
     )
     #To do: update nedpoint to start inference pipeline.
     model_deploy_op = gcc_aip.ModelDeployOp( 
         project=project_id,
         endpoint=endpoint_create_op.outputs["endpoint"],
         model=model_upload_op.outputs["model"],
-        deployed_model_display_name="lstm_trained_model_deploy_nocache2",
+        deployed_model_display_name="lstm_trained_model",
         machine_type="n1-standard-4",
         service_account="vertex-ai-pipeline@acbm-317517.iam.gserviceaccount.com"
     )
@@ -307,13 +308,6 @@ response = api_client.create_run_from_job_spec(
     service_account = 'vertex-ai-pipeline@acbm-317517.iam.gserviceaccount.com',
     parameter_values={
         'project_id': project_id,
-        'model_uri': 'test_pipeline_2',
-        'bucket_name': 'test_pipeline_2',
+        'model_uri': 'demo_dataset_acbm',
+        'bucket_name': 'demo_dataset_acbm',
     })
-
-
-
-#add blob downloader for training process for now. then talk to people about how to separate and pass through
-# with open("training_pipeline.yaml", 'r') as yaml_in, open("training_pipeline.json", "w") as json_out:
-#     yaml_object = yaml.safe_load(yaml_in) # yaml_object will be a list or a dict
-#     json.dump(yaml_object, json_out)
