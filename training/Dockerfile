@@ -40,7 +40,8 @@ COPY ["./LSTM/models", "./models"]
 
 
 # install dependencies
-RUN pip install -r /training/requirements.txt
+RUN pip install -r /training/requirements.txt && \
+    pip install --upgrade protobuf
 
 RUN ls models
 
