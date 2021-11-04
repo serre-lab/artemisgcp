@@ -117,7 +117,7 @@ def check_embeddings_exist(video_file: str) -> str:
 
     storage_client = storage.Client()
     bucket = storage_client.bucket(bucket_name)
-    blob = bucket.blob(source_blob_name.replace('.mp4', '.p'))
+    blob = bucket.blob(source_blob_name.replace('.mp4', '.p').replace('videos/', 'embeddings/'))
 
     if blob.exists():
         return 'Exists'
@@ -156,7 +156,7 @@ def upload_embeddings(video_file: str, embeddings: comp.InputArtifact()):
     bucket_name, source_blob_name = parse_url(video_file)
     storage_client = storage.Client()
     bucket = storage_client.bucket(bucket_name)
-    destination_blob_name = source_blob_name.replace('.mp4', '.p')
+    destination_blob_name = source_blob_name.replace('.mp4', '.p').replace('videos/', 'embeddings/')
 
     upload_blob(bucket_name, embeddings, destination_blob_name)
 
@@ -211,7 +211,9 @@ implementation:
     pipeline_root=pipeline_root_path)
 def pipeline(project_id: str, model_uri: str, bucket_name: str):
     
-    with kfp.dsl.ParallelFor(['None']) as video:
+    with kfp.dsl.ParallelFor(['gs://example_training_data/videos/Alc-B-W4_old_video_2019Y_04M_26D_08h_46m_33s_cam_17202345-0000.mp4',
+                              'gs://example_training_data/videos/Alc_B-W1_old_video_2019Y_04M_08D_04h_54m_38s_cam_17202345-0000.mp4',
+                              'gs://example_training_data/videos/Alc_B-W2-04-Notdrinking_old_video_2019Y_04M_12D_08h_21m_24s_cam_17202339-0000.mp4']) as video:
         check_embeddings_op = check_embeddings_component(video)
         check_embeddings_op.execution_options.caching_strategy.max_cache_staleness = "P0D"
         with kfp.dsl.Condition(check_embeddings_op.output != 'Exists'):
@@ -308,6 +310,6 @@ response = api_client.create_run_from_job_spec(
     service_account = 'vertex-ai-pipeline@acbm-317517.iam.gserviceaccount.com',
     parameter_values={
         'project_id': project_id,
-        'model_uri': 'demo_dataset_acbm',
-        'bucket_name': 'demo_dataset_acbm',
+        'model_uri': 'example_training_data',
+        'bucket_name': 'example_training_data',
     })
