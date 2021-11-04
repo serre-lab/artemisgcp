@@ -22,7 +22,9 @@ FROM gcr.io/deeplearning-platform-release/pytorch-gpu.1-1
 # make directories
 RUN mkdir -p training && \
     mkdir -p training/central_reservoir && \
-    mkdir -p training/models
+    mkdir -p training/models && \
+    mkdir -p training/annotations && \
+    mkdir -p training/embeddings
 
 # set working directory
 WORKDIR ./training
@@ -34,16 +36,11 @@ COPY --from=lfs_runner ["./artemisgcp/LSTM/models", "./models"]
 
 COPY ["./training/utils.py", "./training/dataset_load_torch.py", "./training/requirements.txt", "./training/training_runjob.sh", "./training/main_training.py", "./training/baseline.py", "./training/download_blobs.py", "./training/upload_blob.py", "./"]
 
-
-
 COPY ["./LSTM/models", "./models"]
-
 
 # install dependencies
 RUN pip install -r /training/requirements.txt && \
     pip install --upgrade protobuf
 
-RUN ls models
-
-CMD [""]
+ENTRYPOINT ["bin/bash"]
 
