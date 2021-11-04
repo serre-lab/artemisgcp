@@ -12,7 +12,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: brown-bnc/xnat-admin-tools
+  IMAGE_NAME: serre-lab/artemisgcp
 
 jobs:
   build-image:
@@ -47,6 +47,8 @@ jobs:
             type=sha
 
       - name: Build and Push Image
+        env:
+          TAGS: ${{ steps.meta.outputs.tags }}
         run: |
           echo ${{ env.TAGS }}
 
