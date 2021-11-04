@@ -44,17 +44,18 @@ jobs:
         shell: bash
         run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
 
-      - name: Build Image
+      - name: Build and Push Image
         env:
           VERSION_TAG: ${{ steps.tag.outputs.tags }}
           MAIN_TAG: ${{ steps.extract_branch.outputs.branch }}
         run: |
           docker-compose build
-      
-      - name: Push Image
-        if: ${{ steps.extract_branch.outputs.branch == 'main' && github.event_name != 'pull_request'}}
-        run: |
           docker-compose push
+      
+      # - name: Push Image
+      #   if: ${{ steps.extract_branch.outputs.branch == 'main' && github.event_name != 'pull_request'}}
+      #   run: |
+      #     docker-compose push
 
 
 

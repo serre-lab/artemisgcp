@@ -1,57 +1,37 @@
 version: "3"
 services:
     preprocess:
-        image: i3d-preprocess:latest
-        build:
-            context: .
-            dockerfile: ./preprocess/Dockerfile
+      image: ${REGISTRY}/${IMAGE_NAME}/preprocess:${MAIN_TAG}
+      build:
+          context: .
+          dockerfile: ./preprocess/Dockerfile
     inference:
-        image: lstm-inference:latest
-        build:
-            context: .
-            dockerfile: ./inference/Dockerfile
+      image: ${REGISTRY}/${IMAGE_NAME}/inference:${MAIN_TAG}
+      build:
+          context: .
+          dockerfile: ./inference/Dockerfile
     utils:
-        image: utils:latest
-        build:
-            context: .
-            dockerfile: ./utils/Dockerfile
+      image: ${REGISTRY}/${IMAGE_NAME}/utils:${MAIN_TAG}
+      build:
+          context: .
+          dockerfile: ./utils/Dockerfile
     training:
-      image: training:latest
+      image: ${REGISTRY}/${IMAGE_NAME}/training:${MAIN_TAG}
       build: 
         context: .
         dockerfile: ./training/Dockerfile
         #cache_from: 
         #  - gcr.io/acbm-317517/artemisgcp_training:latest
     endpoint:
-      image: endpoint:latest
+      image: ${REGISTRY}/${IMAGE_NAME}/endpoint:${MAIN_TAG}
       build:
        context: ./endpoint
        dockerfile: Dockerfile
     download_model:
-      image: download_model:latest
+      image: ${REGISTRY}/${IMAGE_NAME}/download_model:${MAIN_TAG}
       build:
         context: .
         dockerfile: ./download_model/Dockerfile
-
-    # Tag main dockers
-    main_preprocess:
-      extends: preprocess
-      image: ${REGISTRY}/${IMAGE_NAME}/preprocess:${MAIN_TAG}
-    main_inference:
-      extends: inference
-      image: ${REGISTRY}/${IMAGE_NAME}/inference:${MAIN_TAG}
-    main_utils:
-      extends: utils
-      image: ${REGISTRY}/${IMAGE_NAME}/utils:${MAIN_TAG}
-    main_training:
-      extends: training
-      image: ${REGISTRY}/${IMAGE_NAME}/training:${MAIN_TAG}
-    main_endpoint:
-      extends: endpoint
-      image: ${REGISTRY}/${IMAGE_NAME}/endpoint:${MAIN_TAG}
-    main_download_model:
-      extends: download_model
-      image: ${REGISTRY}/${IMAGE_NAME}/download_model:${MAIN_TAG}
     
     # version tag the dockers
     version_preprocess:
