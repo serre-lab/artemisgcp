@@ -1,41 +1,77 @@
 version: "3"
 services:
     preprocess:
-        image: gcr.io/${PROJECT_ID}/i3d-preprocess:latest
+        image: i3d-preprocess:latest
         build:
             context: .
             dockerfile: ./preprocess/Dockerfile
     inference:
-        image: gcr.io/${PROJECT_ID}/lstm-inference:latest
+        image: lstm-inference:latest
         build:
             context: .
             dockerfile: ./inference/Dockerfile
     utils:
-        image: gcr.io/${PROJECT_ID}/utils:latest
+        image: utils:latest
         build:
             context: .
             dockerfile: ./utils/Dockerfile
     training:
-      image: gcr.io/${PROJECT_ID}/training:latest
+      image: training:latest
       build: 
         context: .
         dockerfile: ./training/Dockerfile
         #cache_from: 
         #  - gcr.io/acbm-317517/artemisgcp_training:latest
     endpoint:
-      image: gcr.io/${PROJECT_ID}/endpoint:latest
+      image: endpoint:latest
       build:
        context: ./endpoint
        dockerfile: Dockerfile
     download_model:
-      image: gcr.io/${PROJECT_ID}/download_model:latest
+      image: download_model:latest
       build:
         context: .
         dockerfile: ./download_model/Dockerfile
-      #volumes:
-     #   - ./endpoint/:/app/
-      # command: gunicorn app:app --config=/app/config.py
-     # ports:
-     #   - "8080:8080"
+
+    # Tag main dockers
+    main_preprocess:
+      extends: preprocess
+      image: ${REGISTRY}/${IMAGE_NAME}/preprocess:${MAIN_TAG}
+    main_inference:
+      extends: inference
+      image: ${REGISTRY}/${IMAGE_NAME}/inference:${MAIN_TAG}
+    main_utils:
+      extends: utils
+      image: ${REGISTRY}/${IMAGE_NAME}/utils:${MAIN_TAG}
+    main_training:
+      extends: training
+      image: ${REGISTRY}/${IMAGE_NAME}/training:${MAIN_TAG}
+    main_endpoint:
+      extends: endpoint
+      image: ${REGISTRY}/${IMAGE_NAME}/endpoint:${MAIN_TAG}
+    main_download_model:
+      extends: download_model
+      image: ${REGISTRY}/${IMAGE_NAME}/download_model:${MAIN_TAG}
+    
+    # version tag the dockers
+    version_preprocess:
+      extends: preprocess
+      image: ${REGISTRY}/${IMAGE_NAME}/preprocess:${VERSION_TAG:-dev}
+    version_inference:
+      extends: inference
+      image: ${REGISTRY}/${IMAGE_NAME}/inference:${VERSION_TAG:-dev}
+    version_utils:
+      extends: utils
+      image: ${REGISTRY}/${IMAGE_NAME}/utils:${VERSION_TAG:-dev}
+    version_training:
+      extends: training
+      image: ${REGISTRY}/${IMAGE_NAME}/training:${VERSION_TAG:-dev}
+    version_endpoint:
+      extends: endpoint
+      image: ${REGISTRY}/${IMAGE_NAME}/endpoint:${VERSION_TAG:-dev}
+    version_download_model:
+      extends: download_model
+      image: ${REGISTRY}/${IMAGE_NAME}/download_model:${VERSION_TAG:-dev}
+    
 
    

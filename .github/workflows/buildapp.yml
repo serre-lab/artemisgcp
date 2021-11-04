@@ -33,24 +33,21 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v3
+      - name: Extract tag name
+        id: tag
+        uses: actions/github-script@0.2.0
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-            type=sha
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            return context.payload.ref.replace(/\/refs\/tags\//, '');
 
       - name: Build and Push Image
         env:
-          TAGS: ${{ steps.meta.outputs.tags }}
+          VERSION_TAG: ${{ steps.tag.outputs.tags }}
+          MAIN_TAG: main
         run: |
-          echo ${{ env.TAGS }}
+          docker-compose up
+          docker-compose push
 
 # cd endpoint
 # docker build --tag gcp-app .
