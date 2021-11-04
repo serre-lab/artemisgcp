@@ -3,9 +3,7 @@ name: Build Image for endpoin
 on: 
   push:
     branches:
-      - 'main'
-    tags:
-      - 'v*.*.*'
+      - "*"
   pull_request:
     branches:
       - 'main'
@@ -41,13 +39,24 @@ jobs:
           script: |
             return context.payload.ref.replace(/\/refs\/tags\//, '');
 
-      - name: Build and Push Image
+      - name: Extract branch name
+        id: extract_branch
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})""
+
+      - name: Build Image
         env:
           VERSION_TAG: ${{ steps.tag.outputs.tags }}
-          MAIN_TAG: main
+          MAIN_TAG: ${{ steps.extract_branch.outputs.branch }}
         run: |
-          docker-compose up
+          docker-compose build
+      
+      - name: Push Image
+        if: ${{ steps.extract_branch.outputs.branch == 'main' && github.event_name != 'pull_request'}}
+        run: |
           docker-compose push
+
+
 
 # cd endpoint
 # docker build --tag gcp-app .
