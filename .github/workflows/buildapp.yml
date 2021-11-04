@@ -10,7 +10,7 @@ on:
 
 env:
   REGISTRY: gcr.io
-  IMAGE_NAME: serre-lab/artemisgcp
+  IMAGE_NAME: acbm-317517
 
 jobs:
   build-image:
