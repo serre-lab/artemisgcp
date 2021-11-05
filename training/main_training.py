@@ -131,8 +131,12 @@ loss_100 = []
 
 if __name__ == '__main__':
     #creates biLSTM model. 
+    print("cuda device available: {}".format(torch.cuda.is_available()))
+    print("current cuda device: {}".format(torch.cuda.current_device()))
+    print("Device name : {}".format(torch.cuda.get_device_name(0)))
+
     model = BiStackedLSTMOne(input_size=1024, hidden_sizes=[256], num_classes=9, num_steps = 16)
-    model = model.cuda()
+    model = model.to('cuda:0')
 
     model_path = args.model
     
@@ -151,8 +155,8 @@ if __name__ == '__main__':
           model.train()
           curr_iter += 1
           
-          frames = frames.cuda()
-          labels = labels.cuda()
+          frames = frames.to('cuda:0')
+          labels = labels.to('cuda:0')
           predictions = model(frames)
           loss = loss_fn(predictions, labels[:,-3])
 	        
