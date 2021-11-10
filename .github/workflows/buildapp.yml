@@ -1,4 +1,4 @@
-name: Build Image for endpoin
+name: Build Image for endpoint
 
 on: 
   push:
@@ -53,12 +53,11 @@ jobs:
           MAIN_TAG: ${{ steps.extract_branch.outputs.branch }}
         run: |
           docker-compose build
-          docker-compose push
       
-      # - name: Push Image
-      #   if: ${{ steps.extract_branch.outputs.branch == 'main' && github.event_name != 'pull_request'}}
-      #   run: |
-      #     docker-compose push
+      - name: Push Image
+        if: ${{ steps.extract_branch.outputs.branch == 'main' && github.event_name != 'pull_request'}}
+        run: |
+          docker-compose push
 
 
 

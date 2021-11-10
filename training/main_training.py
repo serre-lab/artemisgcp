@@ -22,6 +22,8 @@ import argparse
 import logging
 from urllib.parse import urlparse
 from datetime import datetime
+from pathlib import Path
+import yaml
 logging.basicConfig(level=logging.INFO)
 logging.info('The video main training code is running')
 
@@ -29,40 +31,32 @@ logging.info('The video main training code is running')
 plt.ioff()
 
 
-def download_yaml(bucket_name, source_blob_name) -> str:
-   from google.cloud import storage
+# def download_yaml(bucket_name, source_blob_name) -> str:
+#    from google.cloud import storage
 
-   client = storage.Client()
+#    client = storage.Client()
 
-   model_bucket = client.bucket(bucket_name)
-   yaml_blob = model_bucket.blob(source_blob_name)
+#    model_bucket = client.bucket(bucket_name)
+#    yaml_blob = model_bucket.blob(source_blob_name)
 
-   document = yaml_blob.download_as_text()
+#    document = yaml_blob.download_as_text()
 
-   return document
+#    return document
 
-def update_and_upload_yaml(raw_txt, version, accuracy, model_path):
+def update_yaml(document, version, accuracy, model_path):
 
-   import yaml
-
-   document = yaml.safe_load(raw_txt)
-
-   current_model = {'path': model_path, 'accuracy': float('{}'.format(accuracy))}
+   current_model = {'path': version, 'accuracy': float('{}'.format(accuracy))}
    document['models'][version] = current_model
 
-   with open('updated_models.yaml', 'w') as f:
-      dump = yaml.dump(document)
-      f.write(dump)
-
-   upload_blob(args.save, 'updated_models.yaml', 'trained_models/models.yaml')
+   return document
 
 
 #Get video path argument
 parser = argparse.ArgumentParser()
-parser.add_argument('-m', '--model', help='Path to model URI folder.')
 parser.add_argument('-e', '--emb', help='Path to embs URI folder.', required=True)
 parser.add_argument('-a', '--annotation', help='Path to annotation URI foler', required=True)
 parser.add_argument('-s', '--save', help='Path to annotation URI foler', required=True)
+parser.add_argument('-t', '--trained_models_folder', help='Folder where trained models are saved', required=True)
 
 args = parser.parse_args()
 parsedSave= urlparse(args.save)
@@ -118,8 +112,8 @@ train_indices, val_indices = indices[split:], indices[:split]
 # Creating PT data samplers and loaders:
 train_sampler = SubsetRandomSampler(train_indices)
 valid_sampler = SubsetRandomSampler(val_indices)
-train_loader = DataLoader(data, batch_size=32, pin_memory=True, num_workers=4, drop_last=True, sampler=train_sampler) #calls __getitem__ in batches of 32
-val_loader = DataLoader(data, batch_size=32, pin_memory=True, num_workers=4, drop_last=True, sampler=valid_sampler) #calls __getitem__ in batches of 32
+train_loader = DataLoader(data, batch_size=4096, pin_memory=True, num_workers=4, drop_last=True, sampler=train_sampler) #calls __getitem__ in batches of 32
+val_loader = DataLoader(data, batch_size=4096, pin_memory=True, num_workers=4, drop_last=True, sampler=valid_sampler) #calls __getitem__ in batches of 32
 
 
 #set up arrays for training
@@ -131,10 +125,19 @@ loss_100 = []
 
 if __name__ == '__main__':
     #creates biLSTM model. 
-    model = BiStackedLSTMOne(input_size=1024, hidden_sizes=[256], num_classes=9, num_steps = 16)
-    model = model.cuda()
+    print("cuda device available: {}".format(torch.cuda.is_available()))
+    print("current cuda device: {}".format(torch.cuda.current_device()))
+    print("Device name : {}".format(torch.cuda.get_device_name(0)))
 
-    model_path = args.model
+    model = BiStackedLSTMOne(input_size=1024, hidden_sizes=[256], num_classes=9, num_steps = 16)
+    model = model.to('cuda:0')
+
+    model_path = 'models/base_model.pth'
+    model_folder = args.trained_models_folder
+    Path(model_folder).mkdir(parents= True, exist_ok=True)
+
+    with open('models/models.yaml', 'r') as f:
+       document = yaml.safe_load(f)
     
     ##LOAD MODEL HERE
     model.load_state_dict(torch.load(model_path))
@@ -151,8 +154,8 @@ if __name__ == '__main__':
           model.train()
           curr_iter += 1
           
-          frames = frames.cuda()
-          labels = labels.cuda()
+          frames = frames.to('cuda:0')
+          labels = labels.to('cuda:0')
           predictions = model(frames)
           loss = loss_fn(predictions, labels[:,-3])
 	        
@@ -218,12 +221,18 @@ if __name__ == '__main__':
                #  print("model saved")
                dt = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
                version = 'LSTM_model_{}.pth'.format(dt)
-               model_path = 'trained_models/' + version
-               document = download_yaml(args.save, source_blob_name = 'trained_models/models.yaml')
-               update_and_upload_yaml(document, version, b_acc, model_path)
-               torch.save(model.state_dict(), version)
-               upload_blob(args.save, version, model_path)
+               model_path = os.path.join(model_folder, version)
+               update_yaml(document, version, b_acc, model_path)
+               torch.save(model.state_dict(), model_path)
                print("model saved")
+
+    with open(os.path.join(model_folder, 'models.yaml'), 'w') as f:
+       dump = yaml.dump(document)
+       f.write(dump)
+
+    
+    
+    print('Wrote yaml file to directory')
                
 
 
