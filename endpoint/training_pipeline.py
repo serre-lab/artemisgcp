@@ -16,14 +16,16 @@ create_step_train = comp.load_component_from_text("""
 name: Train Model
 description: trains LSTM model
 inputs:
-- {name: model_uri, type: Path, description: 'Path to Base Model to be trained'}
 - {name: annotation_bucket, type: String, description: 'Path to Annotations to use for training'}
 - {name: embedding_bucket, type: String, description: 'Path to Embeddings to use for training'}
 - {name: save_bucket, type: String, description: 'Path to trained model to use for training'}
 
+outputs:
+- {name: models_bucket, type: Artifact, description: 'Bucket where trained models are saved'}
+
 implementation:
   container:
-    image: gcr.io/acbm-317517/training:latest
+    image: gcr.io/acbm-317517/training:dev
     # command is a list of strings (command-line arguments). 
     # The YAML language has two syntaxes for lists and you can use either of them. 
     # Here we use the "flow syntax" - comma-separated strings inside square brackets.
@@ -31,35 +33,33 @@ implementation:
       python, 
       # Path of the program inside the container
       /training/main_training.py,
-      --model,
-      {inputPath: model_uri},
       --emb, 
       {inputValue: embedding_bucket},
       --annotation, 
       {inputValue: annotation_bucket},
       --save,
       {inputValue: save_bucket},
+      --trained_models_folder,
+      {outputPath: models_bucket}
     ]""")
 
 download_model_component = comp.load_component_from_text("""
 name: Download Model
 description: Downloads the most accurate model
 inputs:
-- {name: model_bucket, type: String, description: 'Path to the bucket where models are stored'}
-
-outputs:
-- {name: best_model, type: Artifact, description: 'Best model from list of models in GCP bucket'}
+- {name: model_bucket, type: Artifact, description: 'Path to the bucket where models are stored'}
+- {name: best_model, type: String, description: 'URI where the best model along with its metadata is to be stored'}
 
 implementation:
     container: 
-        image: 'gcr.io/acbm-317517/download_model:latest'
+        image: 'gcr.io/acbm-317517/download_model:dev'
         command: [
             python,
             download_model.py,
             --bucket_name,
-            {inputValue: model_bucket},
-            --model_file,
-            {outputPath: best_model},
+            {inputPath: model_bucket},
+            --model_folder,
+            {inputValue: best_model}
         ]""")
 
 # def download_model(source_blob_model: str, model_file: OutputPath()):
@@ -163,12 +163,12 @@ def upload_embeddings(video_file: str, embeddings: comp.InputArtifact()):
 
 check_embeddings_component = comp.create_component_from_func(
     check_embeddings_exist, 
-    base_image = 'gcr.io/acbm-317517/utils:latest'
+    base_image = 'gcr.io/acbm-317517/utils:dev'
     )
 
 upload_component = comp.create_component_from_func(
     upload_embeddings,
-    base_image = 'gcr.io/acbm-317517/utils:latest'
+    base_image = 'gcr.io/acbm-317517/utils:dev'
 )
 
 # download_blob_step = comp.create_component_from_func(
@@ -189,7 +189,7 @@ outputs:
 
 implementation:
   container:
-    image: gcr.io/acbm-317517/i3d-preprocess:latest
+    image: gcr.io/acbm-317517/preprocess:dev
     # command is a list of strings (command-line arguments). 
     # The YAML language has two syntaxes for lists and you can use either of them. 
     # Here we use the "flow syntax" - comma-separated strings inside square brackets.
@@ -211,6 +211,9 @@ implementation:
     pipeline_root=pipeline_root_path)
 def pipeline(project_id: str, model_uri: str, bucket_name: str):
     
+    from datetime import datetime
+    dt = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+
     with kfp.dsl.ParallelFor(['gs://example_training_data/videos/Alc-B-W4_old_video_2019Y_04M_26D_08h_46m_33s_cam_17202345-0000.mp4',
                               'gs://example_training_data/videos/Alc_B-W1_old_video_2019Y_04M_08D_04h_54m_38s_cam_17202345-0000.mp4',
                               'gs://example_training_data/videos/Alc_B-W2-04-Notdrinking_old_video_2019Y_04M_12D_08h_21m_24s_cam_17202339-0000.mp4']) as video:
@@ -224,15 +227,9 @@ def pipeline(project_id: str, model_uri: str, bucket_name: str):
                 'cloud.google.com/gke-accelerator', 'nvidia-tesla-p100'
             ).set_gpu_limit(1))
             upload_op = upload_component(video, preprocess_op.output)
-    
-   
-    download_blob_op = (download_model_component(
-      model_bucket=bucket_name
-    ))
 
     
     train_step = create_step_train(
-        model_uri=download_blob_op.output,
         annotation_bucket=bucket_name,
         embedding_bucket=bucket_name,
         save_bucket=bucket_name,
@@ -242,15 +239,21 @@ def pipeline(project_id: str, model_uri: str, bucket_name: str):
 
     train_step.after(upload_op)
 
+    download_blob_op = (download_model_component(
+      model_bucket=train_step.output,
+      best_model='gs://{}/{}'.format(bucket_name, dt)
+    ))
+
     model_upload_op = gcc_aip.ModelUploadOp(
+      artifact_uri='gs://example_training_data/{}'.format(dt),
       project=project_id,
       display_name='lstm_trained_model',
       serving_container_predict_route='/prediction',
       serving_container_health_route='/health',
-      serving_container_image_uri='gcr.io/acbm-317517/endpoint:latest',
+      serving_container_image_uri='gcr.io/acbm-317517/endpoint:dev',
       serving_container_environment_variables={"MODEL_PATH": "{}".format(pipeline_root_path)},
     )
-    model_upload_op.after(train_step)
+    model_upload_op.after(download_blob_op)
 
     endpoint_create_op = gcc_aip.EndpointCreateOp(
         project=project_id,

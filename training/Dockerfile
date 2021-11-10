@@ -17,7 +17,7 @@ RUN cd artemisgcp && \
     git lfs pull -I LSTM/models
 
 
-FROM gcr.io/deeplearning-platform-release/pytorch-gpu.1-1
+FROM gcr.io/deeplearning-platform-release/pytorch-gpu.1-10
 
 # make directories
 RUN mkdir -p training && \
