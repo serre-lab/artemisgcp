@@ -22,12 +22,38 @@ import argparse
 import logging
 from urllib.parse import urlparse
 from datetime import datetime
+
 logging.basicConfig(level=logging.INFO)
 logging.info('The video main training code is running')
 
 
 plt.ioff()
 
+BEHAVIOR_INDICES = {
+      'drink':0,
+      'eat':1,
+      'groom':2,
+      'hang':3,
+      'sniff':4,
+      'rear':5,
+      'rest':6,
+      'walk':7,
+      'eathand':8}
+
+def computeMatch(conf_mat, predictions, ground_truth, BEHAVIOR_INDICES):
+    #import ipdb; ipdb.set_trace()
+    
+    slack = 20
+    for idx,label in enumerate(ground_truth):
+        
+        if label in predictions[int(max(0,idx-slack/2)) : int(min(idx+1+slack/2, len(ground_truth)))]:
+            conf_mat[ground_truth[idx], ground_truth[idx]] += 1
+        else:
+            conf_mat[ground_truth[idx], predictions[idx]] += 1
+    row_sums = np.sum(conf_mat, axis=1)
+    conf_mat = conf_mat/row_sums[:, np.newaxis]
+    conf_mat = np.nan_to_num(conf_mat)
+    return conf_mat
 
 def download_yaml(bucket_name, source_blob_name) -> str:
    from google.cloud import storage
@@ -36,16 +62,26 @@ def download_yaml(bucket_name, source_blob_name) -> str:
 
    model_bucket = client.bucket(bucket_name)
    yaml_blob = model_bucket.blob(source_blob_name)
+   try:
+      document = yaml_blob.download_as_text()
+      return document
+   except:
+      print("no yaml file.")
 
-   document = yaml_blob.download_as_text()
+   
 
-   return document
-
-def update_and_upload_yaml(raw_txt, version, accuracy, model_path):
+def update_and_upload_yaml(raw_txt, version, accuracy, model_path, confusion_matrix):
 
    import yaml
-
-   document = yaml.safe_load(raw_txt)
+  
+   try:
+      document = yaml.safe_load(raw_txt)
+      
+   except:
+      print('creating new yaml file')
+      document = {}
+      document['models'] = {}
+  
 
    current_model = {'path': model_path, 'accuracy': float('{}'.format(accuracy))}
    document['models'][version] = current_model
@@ -54,7 +90,13 @@ def update_and_upload_yaml(raw_txt, version, accuracy, model_path):
       dump = yaml.dump(document)
       f.write(dump)
 
+   np.save(version, confusion_matrix)
+
    upload_blob(args.save, 'updated_models.yaml', 'trained_models/models.yaml')
+
+   upload_blob(args.save, version + '.npy', 'trained_models/' + version + '.npy')
+
+   
 
 
 #Get video path argument
@@ -90,14 +132,14 @@ parsedSave= urlparse(args.save)
    
 
 #download blobs to container based on argument
-downloadData(annotation_bucket_name=args.annotation, embedding_bucket_name=args.emb)
+#downloadData(annotation_bucket_name=args.annotation, embedding_bucket_name=args.emb)
 
 #f = open('annotations/Trap2_FC-A-1-12-Postfear_new_video_2019Y_02M_23D_05h_30m_06s_cam_6394846-0000.mp4_training_annotations.json')
 
 #print(f.read())
 
 #load available data frames
-data = MouseDataset('annotations/', 'embeddings/') #object that allows us to get a data. __getitem__ returns 64 embs, labels
+data = MouseDataset('/home/jordan/Desktop/artemisgcp/training/annotations/', '/home/jordan/Desktop/artemisgcp/training/embeddings/') #object that allows us to get a data. __getitem__ returns 64 embs, labels
 
 #split training and validaion set
 validation_split = .2
@@ -165,6 +207,8 @@ if __name__ == '__main__':
 
 	  #VALIDATION ------
           if (curr_iter) % 100 == 0:
+
+             conf_mat = np.zeros((9,9))
              _, preds = torch.max(F.softmax(predictions[:,:], dim=1),1)
              #print("Iter: ", curr_iter, "Training:  ", np.average(loss_100), bal_acc(labels[:,-3].cpu().numpy(), preds.cpu().numpy()))
 	            
@@ -192,6 +236,7 @@ if __name__ == '__main__':
             
              
              
+             
              b_acc = bal_acc(all_labels, all_val_preds_slack.cpu().numpy()) #STILL FINDING LAST ONE THink it might have to do with how I am loading (data_load_torch.py)
              baccs.append(b_acc)
              
@@ -211,6 +256,8 @@ if __name__ == '__main__':
              loss_100 = []
              model.train()
              if b_acc==max(baccs) and b_acc>0.7:
+               val_conf_matrix = computeMatch(conf_mat, all_val_preds, all_labels, BEHAVIOR_INDICES)
+
                #  model_name = 'model_acc_{}.pth'.format(b_acc)
                #  model_path = 'trained_models/' + model_name
                #  torch.save(model.state_dict(), model_name)
@@ -220,9 +267,9 @@ if __name__ == '__main__':
                version = 'LSTM_model_{}.pth'.format(dt)
                model_path = 'trained_models/' + version
                document = download_yaml(args.save, source_blob_name = 'trained_models/models.yaml')
-               update_and_upload_yaml(document, version, b_acc, model_path)
+               update_and_upload_yaml(document, version, b_acc, model_path, val_conf_matrix)
                torch.save(model.state_dict(), version)
-               upload_blob(args.save, version, model_path)
+               #upload_blob(args.save, version, model_path)
                print("model saved")
                
 

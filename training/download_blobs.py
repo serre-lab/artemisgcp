@@ -14,6 +14,7 @@ def downloadData(annotation_bucket_name='', embedding_bucket_name=''):
 
     annotation_list_blobs = annotations_bucket.list_blobs(prefix = "annotations/")
 
+
     embedding_list_blobs = embeddings_bucket.list_blobs(prefix = "embeddings/")
     
     for annotation in annotation_list_blobs:
