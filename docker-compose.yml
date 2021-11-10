@@ -36,22 +36,22 @@ services:
     # version tag the dockers
     version_preprocess:
       extends: preprocess
-      image: ${REGISTRY}/${IMAGE_NAME}/preprocess:${VERSION_TAG:-dev}
+      image: ${REGISTRY}/${IMAGE_NAME}/preprocess:${VERSION_TAG:-latest}
     version_inference:
       extends: inference
-      image: ${REGISTRY}/${IMAGE_NAME}/inference:${VERSION_TAG:-dev}
+      image: ${REGISTRY}/${IMAGE_NAME}/inference:${VERSION_TAG:-latest}
     version_utils:
       extends: utils
-      image: ${REGISTRY}/${IMAGE_NAME}/utils:${VERSION_TAG:-dev}
+      image: ${REGISTRY}/${IMAGE_NAME}/utils:${VERSION_TAG:-latest}
     version_training:
       extends: training
-      image: ${REGISTRY}/${IMAGE_NAME}/training:${VERSION_TAG:-dev}
+      image: ${REGISTRY}/${IMAGE_NAME}/training:${VERSION_TAG:-latest}
     version_endpoint:
       extends: endpoint
-      image: ${REGISTRY}/${IMAGE_NAME}/endpoint:${VERSION_TAG:-dev}
+      image: ${REGISTRY}/${IMAGE_NAME}/endpoint:${VERSION_TAG:-latest}
     version_download_model:
       extends: download_model
-      image: ${REGISTRY}/${IMAGE_NAME}/download_model:${VERSION_TAG:-dev}
+      image: ${REGISTRY}/${IMAGE_NAME}/download_model:${VERSION_TAG:-latest}
     
 
    
