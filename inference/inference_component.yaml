@@ -1,0 +1,24 @@
+name: Run LSTM model
+description: Runs the LSTM model on embeddings
+
+inputs:
+- {name: embeddings, type: Artifact, description: 'Path for embeddings file'}
+
+outputs:
+- {name: Predictions, type: Artifact, description: 'Predictions of pipeline'}
+
+implementation:
+  container:
+    image: gcr.io/acbm-317517/lstm-inference:latest
+    # command is a list of strings (command-line arguments). 
+    # The YAML language has two syntaxes for lists and you can use either of them. 
+    # Here we use the "flow syntax" - comma-separated strings inside square brackets.
+    command: [
+      python, 
+      # Path of the program inside the container
+      dset_main_inf_forshed.py,
+      --embname,
+      {inputPath: embeddings},
+      --output_file_name,
+      {outputPath: Predictions}
+    ]

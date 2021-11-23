@@ -1,7 +1,7 @@
 Flask==2.0.1
 gunicorn==20.1.0
 uvicorn==0.14.0
-kfp==1.7.1
+kfp==1.8.9
 google-api-core==1.31.1
-google-cloud-aiplatform==1.1.1
+google-cloud-aiplatform==1.7.0
 pyparsing>=2.4.2,<3.0.0a0 

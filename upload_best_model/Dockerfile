@@ -22,7 +22,7 @@ FROM python:3.5
 RUN mkdir -p upload_best_model && \
     mkdir -p _model/models
 
-WORKDIR ./download_model
+WORKDIR ./upload_best_model
 
 COPY ["./upload_best_model/upload_best_model.py", "./"]
 # Copy git lfs files
@@ -31,4 +31,4 @@ COPY --from=lfs_runner ["./artemisgcp/LSTM/models/base_model.pth", "./artemisgcp
 RUN pip install google-cloud-storage && \
     pip install pyyaml
 
-ENTRYPOINT ["bin/bash"]
+ENTRYPOINT ["/bin/bash"]

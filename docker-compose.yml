@@ -27,11 +27,16 @@ services:
       build:
        context: ./endpoint
        dockerfile: Dockerfile
+    upload_best_model:
+      image: ${REGISTRY}/${IMAGE_NAME}/upload_best_model:${MAIN_TAG}
+      build:
+        context: .
+        dockerfile: ./upload_best_model/Dockerfile
     download_model:
       image: ${REGISTRY}/${IMAGE_NAME}/download_model:${MAIN_TAG}
       build:
-        context: .
-        dockerfile: ./download_model/Dockerfile
+        context: ./download_model
+        dockerfile: ./Dockerfile
     
     # version tag the dockers
     version_preprocess:
@@ -49,6 +54,9 @@ services:
     version_endpoint:
       extends: endpoint
       image: ${REGISTRY}/${IMAGE_NAME}/endpoint:${VERSION_TAG:-latest}
+    version_upload_best_model:
+      extends: upload_best_model
+      image: ${REGISTRY}/${IMAGE_NAME}/upload_best_model:${VERSION_TAG:-latest}
     version_download_model:
       extends: download_model
       image: ${REGISTRY}/${IMAGE_NAME}/download_model:${VERSION_TAG:-latest}

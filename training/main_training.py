@@ -139,8 +139,12 @@ if __name__ == '__main__':
     with open('models/models.yaml', 'r') as f:
        document = yaml.safe_load(f)
     
+    document['models']['base_model']['path'] = 'base_model.pth'
     ##LOAD MODEL HERE
     model.load_state_dict(torch.load(model_path))
+
+    model_path = os.path.join(model_folder, 'base_model.pth')
+    torch.save(model.state_dict(), model_path)
     
     optimizer = optim.Adam(model.parameters(), lr= 1e-4) #1e-7
 

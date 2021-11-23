@@ -36,6 +36,7 @@ def get_best_model(yaml_file):
     accuracy = 0
     best_model = {}
     for version in models:
+        print(models[version])
         if (float(models[version]['accuracy']) > accuracy):
             accuracy = float(models[version]['accuracy'])
             best_model = models[version]
@@ -74,7 +75,7 @@ def get_best_model(yaml_file):
 #         Path(dirname).mkdir(parents= True, exist_ok=True)
 #         shutil.copyfile('models/base_model.pth', model_file)
 
-def upload_best_model(folder_name: str, model_folder: str):
+def upload_best_model(folder_name: str, model_folder: str, best_model: str):
 
     from pathlib import Path
     import os
@@ -85,17 +86,19 @@ def upload_best_model(folder_name: str, model_folder: str):
         o = urlparse(url)
         return o.netloc, o.path.lstrip('/')
 
-    best_model = get_best_model(os.path.join(folder_name, 'models.yaml'))
+    best_model_meta= get_best_model(os.path.join(folder_name, 'models.yaml'))
 
-    shutil.copyfile(os.path.join(folder_name, best_model['path']), os.path.join('models', best_model['path']))
+    shutil.copyfile(os.path.join(folder_name, best_model_meta['path']), os.path.join('models', best_model_meta['path']))
+    dirname = os.path.dirname(best_model)
+    Path(dirname).mkdir(parents = True, exist_ok=True)
 
-    with open(os.path.join('models', 'model.yaml'), 'w') as f:
-        dump = yaml.dump(best_model)
+    with open(best_model,  'w') as f:
+        dump = yaml.dump(best_model_meta)
         f.write(dump)
 
     bucket_name, source_blob_name = parse_url(model_folder)
-    upload_blob(bucket_name, os.path.join('models', best_model['path']), os.path.join(source_blob_name, best_model['path']))
-    upload_blob(bucket_name, os.path.join('models', 'model.yaml'), os.path.join(source_blob_name, 'model.yaml'))
+    upload_blob(bucket_name, os.path.join('models', best_model_meta['path']), os.path.join(source_blob_name, best_model_meta['path']))
+    upload_blob(bucket_name, best_model, os.path.join(source_blob_name, 'model.yaml'))
 
 
 def parse_args():
@@ -104,9 +107,10 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--bucket_name', type=str, required= True)
     parser.add_argument('--model_folder', type=str, required=True)
+    parser.add_argument('--best_model', type= str, required=True)
 
     return parser.parse_args()
 
 if __name__ == '__main__':
     args = parse_args()
-    upload_best_model(folder_name=args.bucket_name, model_folder=args.model_folder)
+    upload_best_model(folder_name=args.bucket_name, model_folder=args.model_folder, best_model=args.best_model)
