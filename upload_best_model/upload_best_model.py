@@ -88,7 +88,12 @@ def upload_best_model(folder_name: str, model_folder: str, best_model: str):
 
     best_model_meta= get_best_model(os.path.join(folder_name, 'models.yaml'))
 
-    shutil.copyfile(os.path.join(folder_name, best_model_meta['path']), os.path.join('models', best_model_meta['path']))
+    shutil.copyfile(os.path.join(folder_name, best_model_meta['path']), 
+                    os.path.join('models', best_model_meta['path']))
+
+    shutil.copyfile(os.path.join(folder_name, best_model_meta['confusion_matrix']), 
+                    os.path.join('models', best_model_meta['confusion_matrix']))
+                    
     dirname = os.path.dirname(best_model)
     Path(dirname).mkdir(parents = True, exist_ok=True)
 
@@ -97,7 +102,16 @@ def upload_best_model(folder_name: str, model_folder: str, best_model: str):
         f.write(dump)
 
     bucket_name, source_blob_name = parse_url(model_folder)
-    upload_blob(bucket_name, os.path.join('models', best_model_meta['path']), os.path.join(source_blob_name, best_model_meta['path']))
+    upload_blob(bucket_name, 
+                os.path.join('models', best_model_meta['path']), 
+                os.path.join(source_blob_name, best_model_meta['path']))
+    try:
+        upload_blob(bucket_name, 
+                    os.path.join('models', best_model_meta['confusion_matrix']), 
+                    os.path.join(source_blob_name, best_model_meta['path']))
+    except KeyError:
+        print("confusion matrix for the model wasn't found")
+        pass
     upload_blob(bucket_name, best_model, os.path.join(source_blob_name, 'model.yaml'))
 
 
