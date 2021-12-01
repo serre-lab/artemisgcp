@@ -1,4 +1,4 @@
 models:
   base_model:
-   path: trained_models/base_model.pth
+   path: base_model.pth
    accuracy: 0.9573332767722087

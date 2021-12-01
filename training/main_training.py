@@ -27,25 +27,39 @@ import yaml
 logging.basicConfig(level=logging.INFO)
 logging.info('The video main training code is running')
 
+BEHAVIOR_INDICES = {
+      'drink':0,
+      'eat':1,
+      'groom':2,
+      'hang':3,
+      'sniff':4,
+      'rear':5,
+      'rest':6,
+      'walk':7,
+      'eathand':8}
 
 plt.ioff()
 
-
-# def download_yaml(bucket_name, source_blob_name) -> str:
-#    from google.cloud import storage
-
-#    client = storage.Client()
-
-#    model_bucket = client.bucket(bucket_name)
-#    yaml_blob = model_bucket.blob(source_blob_name)
-
-#    document = yaml_blob.download_as_text()
-
-#    return document
+def computeMatch(conf_mat, predictions, ground_truth, BEHAVIOR_INDICES):
+    #import ipdb; ipdb.set_trace()
+    
+    slack = 20
+    for idx,label in enumerate(ground_truth):
+        
+        if label in predictions[int(max(0,idx-slack/2)) : int(min(idx+1+slack/2, len(ground_truth)))]:
+            conf_mat[ground_truth[idx], ground_truth[idx]] += 1
+        else:
+            conf_mat[ground_truth[idx], predictions[idx]] += 1
+    row_sums = np.sum(conf_mat, axis=1)
+    conf_mat = conf_mat/row_sums[:, np.newaxis]
+    conf_mat = np.nan_to_num(conf_mat)
+    return conf_mat
 
 def update_yaml(document, version, accuracy, model_path):
 
-   current_model = {'path': version, 'accuracy': float('{}'.format(accuracy))}
+   current_model = ({'path': version + '.pth', 
+                     'accuracy': float('{}'.format(accuracy)), 
+                     'confusion_matrix': version + '.npy'})
    document['models'][version] = current_model
 
    return document
@@ -139,8 +153,12 @@ if __name__ == '__main__':
     with open('models/models.yaml', 'r') as f:
        document = yaml.safe_load(f)
     
+    document['models']['base_model']['path'] = 'base_model.pth'
     ##LOAD MODEL HERE
     model.load_state_dict(torch.load(model_path))
+
+    model_path = os.path.join(model_folder, 'base_model.pth')
+    torch.save(model.state_dict(), model_path)
     
     optimizer = optim.Adam(model.parameters(), lr= 1e-4) #1e-7
 
@@ -168,6 +186,7 @@ if __name__ == '__main__':
 
 	  #VALIDATION ------
           if (curr_iter) % 100 == 0:
+             conf_mat = np.zeros((9,9))
              _, preds = torch.max(F.softmax(predictions[:,:], dim=1),1)
              #print("Iter: ", curr_iter, "Training:  ", np.average(loss_100), bal_acc(labels[:,-3].cpu().numpy(), preds.cpu().numpy()))
 	            
@@ -214,16 +233,19 @@ if __name__ == '__main__':
              loss_100 = []
              model.train()
              if b_acc==max(baccs) and b_acc>0.7:
+               val_conf_matrix = computeMatch(conf_mat, all_val_preds, all_labels, BEHAVIOR_INDICES)
                #  model_name = 'model_acc_{}.pth'.format(b_acc)
                #  model_path = 'trained_models/' + model_name
                #  torch.save(model.state_dict(), model_name)
                #  upload_blob(args.save, model_name, model_path)
                #  print("model saved")
                dt = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
-               version = 'LSTM_model_{}.pth'.format(dt)
-               model_path = os.path.join(model_folder, version)
+               version = 'LSTM_model_{}'.format(dt)
+               model_path = os.path.join(model_folder, version + '.pth')
+               conf_matrix_path = os.path.join(model_folder, version + '.npy')
                update_yaml(document, version, b_acc, model_path)
                torch.save(model.state_dict(), model_path)
+               np.save(conf_matrix_path, val_conf_matrix)
                print("model saved")
 
     with open(os.path.join(model_folder, 'models.yaml'), 'w') as f:
