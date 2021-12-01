@@ -439,7 +439,10 @@ def pipeline(project_id: str, model_uri: str, bucket_name: str):
     from datetime import datetime
     dt = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
 
-    with kfp.dsl.ParallelFor(['gs://test_pipeline_2/videos/video_2019Y_04M_25D_12h_29m_13s_cam_6394837-0000.mp4']) as video:
+    with kfp.dsl.ParallelFor(
+                ['gs://example_training_data/videos/Alc-B-W4_old_video_2019Y_04M_26D_08h_46m_33s_cam_17202345-0000.mp4',
+                 'gs://example_training_data/videos/Alc_B-W1_old_video_2019Y_04M_08D_04h_54m_38s_cam_17202345-0000.mp4',
+                 'gs://example_training_data/videos/Alc_B-W2-04-Notdrinking_old_video_2019Y_04M_12D_08h_21m_24s_cam_17202339-0000.mp4']) as video:
         check_embeddings_op = check_embeddings_component(video)
         check_embeddings_op.execution_options.caching_strategy.max_cache_staleness = "P0D"
         with kfp.dsl.Condition(check_embeddings_op.output != 'Exists'):
@@ -472,14 +475,14 @@ def pipeline(project_id: str, model_uri: str, bucket_name: str):
     )
 
     model_upload_op = gcc_aip.ModelUploadOp(
-      artifact_uri='gs://test_pipeline_2/{}'.format(dt),
+      artifact_uri='gs://example_training_data/{}'.format(dt),
       project=project_id,
       display_name='lstm_trained_model',
       serving_container_predict_route='/prediction',
       serving_container_health_route='/health',
       serving_container_image_uri='gcr.io/acbm-317517/endpoint:dev',
       labels=get_accuracy_op.output,
-      serving_container_environment_variables=[dict(name = "REGION", value = "us-central1"), dict(name = "BUCKET_NAME", value = "gs://test_pipeline_2"), dict(name = "SERVICE_ACCOUNT", value = "vertex-ai-pipeline@acbm-317517.iam.gserviceaccount.com")]
+      serving_container_environment_variables=[dict(name = "REGION", value = "us-central1"), dict(name = "BUCKET_NAME", value = "gs://example_training_data"), dict(name = "SERVICE_ACCOUNT", value = "vertex-ai-pipeline@acbm-317517.iam.gserviceaccount.com")]
     )
     model_upload_op.after(upload_best_model_op)
 
@@ -560,8 +563,8 @@ compiler.Compiler().compile(pipeline_func=pipeline,
 #     service_account = 'vertex-ai-pipeline@acbm-317517.iam.gserviceaccount.com',
 #     parameter_values={
 #         'project_id': project_id,
-#         'model_uri': 'test_pipeline_2',
-#         'bucket_name': 'test_pipeline_2',
+#         'model_uri': 'example_training_data',
+#         'bucket_name': 'example_training_data',
 #     })
 
 aip.init(project = '82539680728', location = region)
@@ -572,8 +575,8 @@ job = aip.PipelineJob(
     template_path = "training_pipeline.json",
     parameter_values={
         'project_id': project_id,
-        'model_uri': 'test_pipeline_2',
-        'bucket_name': 'test_pipeline_2',
+        'model_uri': 'example_training_data',
+        'bucket_name': 'example_training_data',
     },
     pipeline_root=pipeline_root_path
 ).run(
